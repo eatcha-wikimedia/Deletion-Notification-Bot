@@ -69,11 +69,10 @@ def Notify():
             user = pywikibot.User(SITE, log.user())
             IsAware = AwarenessCheck(FileName,user.getUserTalkPage())
             Log_info(IsAware,user.title(),FileName,)
-            print(get_delete_reason(FileName))
             out("""%s is deleted, it was uploaded by %s and they were %s of it's Deletion.""" % (FileName,user.title(), ("aware" if IsAware == "Yes" else "not aware")),)
             if IsAware == "No":
                 old_text = user.getUserTalkPage().get()
-                new_text = ( old_text + "\n{{subst:User:Deletion Notification Bot/deleted notice|1=%s}}~~~~" % FileName)
+                new_text = ( old_text + "\n{{subst:User:Deletion Notification Bot/deleted notice|1=%s}}\nReason for deletion:%s\n~~~~" % (FileName, get_delete_reason(FileName)))
                 summary = "Notify user about deletion of %s" % FileName
                 commit(old_text, new_text, user.getUserTalkPage(), summary)
 def main():

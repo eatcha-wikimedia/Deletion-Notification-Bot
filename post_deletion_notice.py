@@ -34,6 +34,18 @@ def out(text, newline=True, date=False, color=None):
     )
     pywikibot.stdout("%s%s" % (dstr, text), newline=newline)
 
+def get_delete_reason(FileName):
+    reason = "No reason found"
+    logevents = pywikibot.site.APISite.logevents(
+        SITE,
+        logtype = "delete",
+        page = FileName,
+        reverse = True,
+        )
+    for log in logevents:
+        reason = log.comment()
+    return reason
+
 def Notify():
     gen  = pagegenerators.LogeventsPageGenerator(
         logtype = "delete",
@@ -52,12 +64,12 @@ def Notify():
             logtype = "upload",
             page = FileName,
             reverse = True,
-            start = datetime.utcnow() - timedelta(hours=1000),
             )
         for log in logevents:
             user = pywikibot.User(SITE, log.user())
             IsAware = AwarenessCheck(FileName,user.getUserTalkPage())
             Log_info(IsAware,user.title(),FileName,)
+            print(get_delete_reason(FileName))
             out("""%s is deleted, it was uploaded by %s and they were %s of it's Deletion.""" % (FileName,user.title(), ("aware" if IsAware == "Yes" else "not aware")),)
             if IsAware == "No":
                 old_text = user.getUserTalkPage().get()

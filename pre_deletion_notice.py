@@ -42,12 +42,12 @@ def Notify(cat):
     for page in gen:
         file_name = page.title()
         if file_name.startswith("File:"):
-            uploader_talk = pywikibot.User(SITE, uploader(file_name, link=False)).getUserTalkPage().get()
-            if file_name in uploader_talk:
+            uploader_talk_page = pywikibot.User(SITE, uploader(file_name, link=False)).getUserTalkPage()
+            uploader_talk_text = uploader_talk_page.get()
+            if file_name in uploader_talk_text:
                 continue
             print(file_name)
             print(uploader(file_name, link=False))
-
             # these are SDs (deleted within 2 days or less)
             dict = {
                 "Advertisements for speedy deletion": "{{subst:User:Deletion Notification Bot/NOADS|1=%s}}" % file_name,
@@ -58,22 +58,15 @@ def Notify(cat):
                 "Media without a license as of %s" % today.strftime("%-d %B %Y") : "{{subst:image license|1=%s}}" % file_name,
                 "Media missing permission as of %s" % today.strftime("%-d %B %Y") : "{{subst:image permission|1=%s}}" % file_name,
                 "Media without a source as of %s" % today.strftime("%-d %B %Y") : "{{subst:Image source |1=%s}}" % file_name,
-
             }
-            print(dict.get(cat))
-
-            if cat in ['Advertisements for speedy deletion', 'Copyright violations', 'Other speedy deletions', 'Personal files for speedy deletion']:
+            message = ( "\n" + dict.get(cat) + "\nPS:I am a software, do not ask me any questions but at the [https://commons.wikimedia.org/wiki/Commons:Help_desk help desk]. //~~~~" )
+            new_text = uploader_talk_text + message
+            summary = "Notification about [[Category:%s]] of [[:%s]]" % (cat,file_name)
+            try:
+                commit(uploader_talk_text, new_text, uploader_talk_page, summary)
+            except:
                 pass
-                
 
-            # Deleted in 7 days
-            elif cat in ['Media without a license as of 25 March 2020', 'Media missing permission as of 25 March 2020', 'Media without a source as of 25 March 2020']:
-                pass
-                
-
-            # these are normal DRs : Media without a license as of dd month yyyy
-            else:
-                pass
                 
 
     

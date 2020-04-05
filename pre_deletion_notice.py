@@ -50,7 +50,7 @@ def Notify(cat):
             
             # these are SDs (deleted within 2 days or less)
             dict = {
-                "Advertisements for speedy deletion": "bar",
+                "Advertisements for speedy deletion": "{{subst:User:Deletion Notification Bot/NOADS|1=%s}}",
                 "Copyright violations": "{{subst:copyvionote|1=%s}}" % file_name,
                 "Other speedy deletions": "foo",
                 "Personal files for speedy deletion": "foo",

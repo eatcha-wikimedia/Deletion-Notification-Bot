@@ -47,13 +47,13 @@ def Notify(cat):
                 continue
             print(file_name)
             print(uploader(file_name, link=False))
-            
+
             # these are SDs (deleted within 2 days or less)
             dict = {
                 "Advertisements for speedy deletion": "{{subst:User:Deletion Notification Bot/NOADS|1=%s}}",
                 "Copyright violations": "{{subst:copyvionote|1=%s}}" % file_name,
                 "Other speedy deletions": "foo",
-                "Personal files for speedy deletion": "foo",
+                "Personal files for speedy deletion": "{{subst:User:Deletion Notification Bot/personalNO|1=%s}}",
                 "Deletion requests %s" % today.strftime("%B %Y") : "{{subst:idw|1=%s}}" % file_name,
                 "Media without a license as of %s" % today.strftime("%-d %B %Y") : "{{subst:image license|1=%s}}" % file_name,
                 "Media missing permission as of %s" % today.strftime("%-d %B %Y") : "{{subst:image permission|1=%s}}" % file_name,

@@ -59,7 +59,7 @@ def Notify(cat):
                 "Media missing permission as of %s" % today.strftime("%-d %B %Y") : "{{subst:image permission|1=%s}}" % file_name,
                 "Media without a source as of %s" % today.strftime("%-d %B %Y") : "{{subst:Image source |1=%s}}" % file_name,
             }
-            message = ( "\n" + dict.get(cat) + "\nPS:I am a software, do not ask me any questions but at the [https://commons.wikimedia.org/wiki/Commons:Help_desk help desk]. //~~~~" )
+            message = ( "\n" + dict.get(cat) + "\nI am a software, please do not ask me any questions but at the [https://commons.wikimedia.org/wiki/Commons:Help_desk help desk]. //~~~~" )
             new_text = uploader_talk_text + message
             summary = "Notification about [[Category:%s]] of [[:%s]]" % (cat,file_name)
             try:

@@ -61,7 +61,7 @@ def Notify(cat):
             }
             message = ( "\n" + dict.get(cat) + "\nI am a software, please do not ask me any questions but at the [https://commons.wikimedia.org/wiki/Commons:Help_desk help desk]. //~~~~" )
             new_text = uploader_talk_text + message
-            summary = "Notification about [[Category:%s|%s]] of [[:%s]]" % (cat,cat,file_name)
+            summary = "Notification of [[Category:%s|%s]] - [[:%s]]" % (cat,cat,file_name)
             try:
                 commit(uploader_talk_text, new_text, uploader_talk_page, summary)
             except:

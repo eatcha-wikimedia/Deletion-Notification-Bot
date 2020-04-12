@@ -1,7 +1,7 @@
 import os
 import csv
 import pywikibot
-from datetime import datetime,timedelta
+from datetime import datetime
 from pywikibot import pagegenerators, logentries
 
 CSV_file = os.path.dirname(os.path.realpath(__file__)) + "/deletion_data.csv"

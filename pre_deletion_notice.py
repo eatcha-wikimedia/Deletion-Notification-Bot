@@ -42,7 +42,12 @@ def Notify(cat):
     for page in gen:
         file_name = page.title()
         if file_name.startswith("File:"):
-            uploader_talk_page = pywikibot.User(SITE, uploader(file_name, link=False)).getUserTalkPage()
+            Uploader = uploader(file_name, link=False)
+            rights_array = pywikibot.User(SITE,Uploader).groups(force=True)
+            if 'bot' in rights_array or 'bot' in Uploader.lower():
+                out("We don't want the bot to notify another bot", color="white")
+                continue
+            uploader_talk_page = pywikibot.User(SITE, Uploader).getUserTalkPage()
             uploader_talk_text = uploader_talk_page.get()
             if file_name in uploader_talk_text:
                 continue

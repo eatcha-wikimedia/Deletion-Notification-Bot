@@ -64,9 +64,15 @@ def Notify():
             logtype = "upload",
             page = FileName,
             reverse = True,
+            total = 1,
             )
         for log in logevents:
-            user = pywikibot.User(SITE, log.user())
+            Uploader = log.user()
+            rights_array = pywikibot.User(SITE,Uploader).groups(force=True)
+            if 'bot' in rights_array or 'bot' in Uploader.lower():
+                out("We don't want the bot to notify another bot", color="white")
+                continue
+            user = pywikibot.User(SITE, Uploader)
             IsAware = AwarenessCheck(FileName,user.getUserTalkPage())
             Log_info(IsAware,user.title(),FileName,)
             out("""%s is deleted, it was uploaded by %s and they were %s of it's Deletion.""" % (FileName,user.title(), ("aware" if IsAware == "Yes" else "not aware")),)
@@ -75,6 +81,8 @@ def Notify():
                 new_text = ( old_text + "\n{{subst:User:Deletion Notification Bot/deleted notice|1=%s}}Reason for deletion : %s \n~~~~" % (FileName, get_delete_reason(FileName)))
                 summary = "Notify user about deletion of [[%s]]" % FileName
                 commit(old_text, new_text, user.getUserTalkPage(), summary)
+            else:
+                continue
 def main():
     global SITE
     SITE = pywikibot.Site()

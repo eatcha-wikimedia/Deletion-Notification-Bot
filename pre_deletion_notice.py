@@ -63,10 +63,15 @@ def last_edit(text):
     return int(dt.days * 24 + dt.seconds // 3600)
 
 def total_messages(uploader_talk_text):
-    if last_edit(uploader_talk_text) > 23:
+    le = last_edit(uploader_talk_text)
+    if le > 23:
         return 0
+    count = uploader_talk_text.count("//[[User:Deletion Notification Bot|Deletion Notification Bot]]")
+    
+    if count > 2 and le < 1:
+        return 9**9
 
-    return uploader_talk_text.count("//[[User:Deletion Notification Bot|Deletion Notification Bot]]")
+    return count
 
 def find_subpage(file_name):
     return ""
@@ -102,6 +107,7 @@ def Notify(cat):
                 continue
 
             print(file_name)
+
             print(Uploader)
 
             dict = {
@@ -116,7 +122,7 @@ def Notify(cat):
             }
 
             message = ( "\n" + dict.get(cat) + "\nI am a software, please do not ask me any questions but at the [https://commons.wikimedia.org/wiki/Commons:Help_desk help desk]. //~~~~" )
-            
+
             if cat == "Deletion requests %s" % today.strftime("%B %Y"):
                 subpage = find_subpage(file_name)
                 message.replace("|2=", "|2=%s" % subpage)

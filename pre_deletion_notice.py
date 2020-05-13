@@ -27,6 +27,17 @@ def out(text, newline=True, date=False, color=None):
     )
     pywikibot.stdout("%s%s" % (dstr, text), newline=newline)
 
+def last_editor(filename, link=True):
+    """User that uploaded the file."""
+    history = (pywikibot.Page(SITE, filename)).revisions(reverse=False, total=1)
+    for info in history:
+        username = (info.user)
+    if not history:
+        return "Unknown"
+    if link:
+        return "[[User:%s|%s]]" % (username, username)
+    return username
+
 def uploader(filename, link=True):
     """User that uploaded the file."""
     history = (pywikibot.Page(SITE, filename)).revisions(reverse=True, total=1)
@@ -43,18 +54,28 @@ def Notify(cat):
     for page in gen:
         file_name = page.title()
         if file_name.startswith("File:"):
+
             Uploader = uploader(file_name, link=False)
-            rights_array = pywikibot.User(SITE,Uploader).groups(force=True)
+
+            if Uploader = last_editor(file_name, link=False):
+                out("We don't want the bot to notify if Uploader asked for deletion", color="white")
+                continue
+
+            rights_array = pywikibot.User(SITE, Uploader).groups(force=True)
+
             if 'bot' in rights_array or 'bot' in Uploader.lower():
                 out("We don't want the bot to notify another bot", color="white")
                 continue
+
             uploader_talk_page = pywikibot.User(SITE, Uploader).getUserTalkPage()
             uploader_talk_text = uploader_talk_page.get()
+
             if file_name in uploader_talk_text:
                 continue
+
             print(file_name)
             print(uploader(file_name, link=False))
-            # these are SDs (deleted within 2 days or less)
+            # these are SDs (deleted within 2 days)
             dict = {
                 "Advertisements for speedy deletion": "{{subst:User:Deletion Notification Bot/NOADS|1=%s}}" % file_name,
                 "Copyright violations": "{{subst:copyvionote|1=%s}}" % file_name,
@@ -73,9 +94,6 @@ def Notify(cat):
             except:
                 pass
 
-                
-
-    
 def main(*args):
     global SITE
     args = pywikibot.handle_args(*args)

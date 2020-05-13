@@ -1,6 +1,7 @@
 import pywikibot
 from pywikibot import pagegenerators
 from datetime import datetime
+import re
 
 today = datetime.utcnow()
 
@@ -16,6 +17,7 @@ def commit(old_text, new_text, page, summary):
     pywikibot.showDiff(old_text, new_text)
     summary = summary + ".  [[Commons:Bots/Requests/Deletion Notification Bot| Report Bugs / Suggest improvements]] (trial run)"
     page.put(new_text, summary=summary, watchArticle=True, minorEdit=False)
+
 
 def out(text, newline=True, date=False, color=None):
     """Just output some text to the consoloe or log."""
@@ -50,8 +52,25 @@ def uploader(filename, link=True):
         return "[[User:%s|%s]]" % (username, username)
     return username
 
+def last_edit(text):
+    time_stamps = re.findall(r"[0-9]{1,2}:[0-9]{1,2},\s[0-9]{1,2}\s[a-zA-Z]{1,9}\s[0-9]{4}\s\(UTC\)", text)
+    for time_stamp in time_stamps:
+        last_edit_time = time_stamp
+    try:
+        dt = ( (datetime.utcnow()) - datetime.strptime(last_edit_time, '%H:%M, %d %B %Y (UTC)') )
+    except UnboundLocalError:
+        return 0
+    return int(dt.days * 24 + dt.seconds // 3600)
+
+def total_messages(uploader_talk_text):
+    if last_edit(uploader_talk_text) > 23:
+        return 0
+
+    return uploader_talk_text.count("//[[User:Deletion Notification Bot|Deletion Notification Bot]]")
+
+
 def Notify(cat):
-    gen = pagegenerators.CategorizedPageGenerator(pywikibot.Category(SITE,cat))
+    gen = pagegenerators.CategorizedPageGenerator(pywikibot.Category(SITE, cat))
     for page in gen:
         file_name = page.title()
         if file_name.startswith("File:"):
@@ -69,9 +88,15 @@ def Notify(cat):
                 continue
 
             uploader_talk_page = pywikibot.User(SITE, Uploader).getUserTalkPage()
+
             uploader_talk_text = uploader_talk_page.get()
 
             if file_name in uploader_talk_text:
+                out("%s is Already notified for %s " % (Uploader, file_name) , color="white")
+                continue
+
+            if total_messages(uploader_talk_text) > 4:
+                out("%s\'s too many files are marked for deletion. Will not spam them, not notifying for %s " % (Uploader, file_name) , color="white")
                 continue
 
             print(file_name)

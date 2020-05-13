@@ -27,15 +27,16 @@ def out(text, newline=True, date=False, color=None):
     )
     pywikibot.stdout("%s%s" % (dstr, text), newline=newline)
 
-def uploader(file_name, link=True):
-    """Return the link to the user that uploaded this file"""
-    history = pywikibot.Page(SITE,file_name).getVersionHistory(reverseOrder=True, total=1)
+def uploader(filename, link=True):
+    """User that uploaded the file."""
+    history = (pywikibot.Page(SITE, filename)).revisions(reverse=True, total=1)
+    for info in history:
+        username = (info.user)
     if not history:
         return "Unknown"
     if link:
-        return "[[User:%s|%s]]" % (history[0][2], history[0][2])
-    else:
-        return history[0][2]
+        return "[[User:%s|%s]]" % (username, username)
+    return username
 
 def Notify(cat):
     gen = pagegenerators.CategorizedPageGenerator(pywikibot.Category(SITE,cat))

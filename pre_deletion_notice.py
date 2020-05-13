@@ -98,7 +98,8 @@ def main(*args):
     global SITE
     args = pywikibot.handle_args(*args)
     SITE = pywikibot.Site()
-
+    if not SITE.logged_in():
+        SITE.login()
 
     Deletion_Cats = [
         "Advertisements for speedy deletion",                  #0

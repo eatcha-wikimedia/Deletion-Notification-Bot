@@ -57,7 +57,7 @@ def Notify(cat):
 
             Uploader = uploader(file_name, link=False)
 
-            if Uploader = last_editor(file_name, link=False):
+            if Uploader == last_editor(file_name, link=False):
                 out("We don't want the bot to notify if Uploader asked for deletion", color="white")
                 continue
 

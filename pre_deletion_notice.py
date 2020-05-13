@@ -74,7 +74,15 @@ def total_messages(uploader_talk_text):
     return count
 
 def find_subpage(file_name):
-    return ""
+
+    page_text = pywikibot.Page(SITE, file_name).get()
+
+    try:
+        subpage = re.search(r"\|subpage=(.*?)\|year", page_text).group(1)
+    except AttributeError:
+        subpage = file_name
+
+    return subpage.strip()
 
 def Notify(cat):
     gen = pagegenerators.CategorizedPageGenerator(pywikibot.Category(SITE, cat))

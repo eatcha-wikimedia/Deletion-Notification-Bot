@@ -68,6 +68,8 @@ def total_messages(uploader_talk_text):
 
     return uploader_talk_text.count("//[[User:Deletion Notification Bot|Deletion Notification Bot]]")
 
+def find_subpage(file_name):
+    return ""
 
 def Notify(cat):
     gen = pagegenerators.CategorizedPageGenerator(pywikibot.Category(SITE, cat))
@@ -100,19 +102,25 @@ def Notify(cat):
                 continue
 
             print(file_name)
-            print(uploader(file_name, link=False))
-            # these are SDs (deleted within 2 days)
+            print(Uploader)
+
             dict = {
                 "Advertisements for speedy deletion": "{{subst:User:Deletion Notification Bot/NOADS|1=%s}}" % file_name,
                 "Copyright violations": "{{subst:copyvionote|1=%s}}" % file_name,
                 "Other speedy deletions": "{{subst:User:Deletion Notification Bot/SDEL|1=%s}}" % file_name,
                 "Personal files for speedy deletion": "{{subst:User:Deletion Notification Bot/personalNO|1=%s}}" % file_name,
-                "Deletion requests %s" % today.strftime("%B %Y") : "{{subst:idw|1=%s}}" % file_name,
+                "Deletion requests %s" % today.strftime("%B %Y") : "{{subst:idw|1=%s|2=}}" % file_name,
                 "Media without a license as of %s" % today.strftime("%-d %B %Y") : "{{subst:image license|1=%s}}" % file_name,
                 "Media missing permission as of %s" % today.strftime("%-d %B %Y") : "{{subst:image permission|1=%s}}" % file_name,
                 "Media without a source as of %s" % today.strftime("%-d %B %Y") : "{{subst:Image source |1=%s}}" % file_name,
             }
+
             message = ( "\n" + dict.get(cat) + "\nI am a software, please do not ask me any questions but at the [https://commons.wikimedia.org/wiki/Commons:Help_desk help desk]. //~~~~" )
+            
+            if cat == "Deletion requests %s" % today.strftime("%B %Y"):
+                subpage = find_subpage(file_name)
+                message.replace("|2=", "|2=%s" % subpage)
+            
             new_text = uploader_talk_text + message
             summary = "Notification of [[Category:%s|%s]] - [[:%s]]" % (cat,cat,file_name)
             try:

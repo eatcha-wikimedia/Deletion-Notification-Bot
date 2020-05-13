@@ -133,7 +133,7 @@ def Notify(cat):
 
             if cat == "Deletion requests %s" % today.strftime("%B %Y"):
                 subpage = find_subpage(file_name)
-                message.replace("|2=", "|2=%s" % subpage)
+                message = message.replace("|2=", "|2=%s" % subpage)
             
             new_text = uploader_talk_text + message
             summary = "Notification of [[Category:%s|%s]] - [[:%s]]" % (cat,cat,file_name)

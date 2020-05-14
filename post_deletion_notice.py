@@ -3,8 +3,10 @@ import csv
 import pywikibot
 from datetime import datetime
 from pywikibot import pagegenerators, logentries
+from pathlib import Path
 
-CSV_file = os.path.dirname(os.path.realpath(__file__)) + "/deletion_data.csv"
+
+CSV_file = os.path.dirname(os.path.realpath(__file__)) + ".logs/deletion_data.csv"
 
 def Log_info(IsAware, FileName,UploaderName):
   with open(CSV_file,'a') as fd:
@@ -52,8 +54,20 @@ def Notify():
         site = SITE,
         namespace = 6,
         )
+
+    Path(".logs").mkdir(parents=True, exist_ok=True)
+    m_log = ".logs/%s.csv" % today.strftime("%B_%Y")
+    if not os.path.isfile(m_log):open(m_log, 'w').close()
+    with open(m_log, "r") as f:
+        stored_data = f.read()
+
     for deleted_file in gen:
         FileName = deleted_file.title()
+        
+        if FileName in stored_data:
+            out("%s was processed by the pre script." % FileName, color="white")
+            continue
+        
         try:
             old_text = pywikibot.Page(SITE, FileName).get(get_redirect=True, force=True)
             continue

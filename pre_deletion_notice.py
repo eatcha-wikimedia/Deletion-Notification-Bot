@@ -2,33 +2,18 @@ import pywikibot
 from pywikibot import pagegenerators
 from datetime import datetime
 import re
+from pathlib import Path
+import csv
+import os
 
 today = datetime.utcnow()
-
-def AwarenessCheck(FileName,UploaderTalkPage):
-    if FileName in UploaderTalkPage.get():
-        return "Yes"
-    else:
-        return "No"
 
 def commit(old_text, new_text, page, summary):
     """Show diff and submit text to page."""
     out("\nAbout to make changes at : '%s'" % page.title())
     pywikibot.showDiff(old_text, new_text)
     summary = summary + ".  [[Commons:Bots/Requests/Deletion Notification Bot| Report Bugs / Suggest improvements]] (trial run)"
-    page.put(new_text, summary=summary, watchArticle=True, minorEdit=False)
-
-
-def out(text, newline=True, date=False, color=None):
-    """Just output some text to the consoloe or log."""
-    if color:
-        text = "\03{%s}%s\03{default}" % (color, text)
-    dstr = (
-        "%s: " % datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
-        if date
-        else ""
-    )
-    pywikibot.stdout("%s%s" % (dstr, text), newline=newline)
+    #page.put(new_text, summary=summary, watchArticle=True, minorEdit=False)
 
 def last_editor(filename, link=True):
     """User that uploaded the file."""
@@ -40,6 +25,23 @@ def last_editor(filename, link=True):
     if link:
         return "[[User:%s|%s]]" % (username, username)
     return username
+
+def AwarenessCheck(FileName,UploaderTalkPage):
+    if FileName in UploaderTalkPage.get():
+        return "Yes"
+    else:
+        return "No"
+
+def out(text, newline=True, date=False, color=None):
+    """output some text to the consoloe / log."""
+    if color:
+        text = "\03{%s}%s\03{default}" % (color, text)
+    dstr = (
+        "%s: " % datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
+        if date
+        else ""
+    )
+    pywikibot.stdout("%s%s" % (dstr, text), newline=newline)
 
 def uploader(filename, link=True):
     """User that uploaded the file."""
@@ -67,22 +69,63 @@ def total_messages(uploader_talk_text):
     if le > 23:
         return 0
     count = uploader_talk_text.count("//[[User:Deletion Notification Bot|Deletion Notification Bot]]")
-    
-    if count > 2 and le < 1:
+    if count > 4 and le < 1:
         return 9**9
-
     return count
 
 def find_subpage(file_name):
-
     page_text = pywikibot.Page(SITE, file_name).get()
-
     try:
         subpage = re.search(r"\|subpage=(.*?)\|year", page_text).group(1)
     except AttributeError:
         subpage = file_name
-
     return subpage.strip()
+
+def storeData(file_name, UserName, cat, nominator, m_log):
+    with open(m_log, mode='a') as data_file:
+        writer = csv.writer(data_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+        writer.writerow([file_name, UserName, cat, nominator])
+
+def Nominator(file_name, cat, subpage=None):
+
+    def del_nominator(filename):
+        history = (pywikibot.Page(SITE, filename)).revisions(content=True, reverse=True)
+        for data in history:
+            content = (data.slots['main']['*'])
+            comment = data.comment
+            user = data.user
+            text_to_search = (comment + "\n" + content).lower()
+    
+            key_words = [
+                'delet',
+                'copyvio',
+                'speedydelete',
+                '{{sd',
+                'no license since',
+                'unfree flickr',
+                'missing permission',
+                'dw no source',
+                'no permission since',
+            ]
+            if any(word in text_to_search for word in key_words):
+                break
+            else:
+                comment=user=content =" "
+        return comment, user, content
+
+    del_comment, del_user, del_content =  del_nominator(file_name)
+    if not del_user.isspace():
+        return del_user
+
+    elif cat == "Deletion requests %s" % today.strftime("%B %Y"):
+        page_name = "Commons:Deletion_requests/" + subpage
+        try:
+            nr = uploader(page_name, link=False)
+        except:
+            nr = "Unknown"
+        return nr
+    else:
+        return None
 
 def Notify(cat):
     gen = pagegenerators.CategorizedPageGenerator(pywikibot.Category(SITE, cat))
@@ -91,32 +134,54 @@ def Notify(cat):
         if file_name.startswith("File:"):
 
             Uploader = uploader(file_name, link=False)
+            uploader_talk_page = pywikibot.User(SITE, Uploader).getUserTalkPage()
+            uploader_talk_text = uploader_talk_page.get()
+
+            if cat == "Deletion requests %s" % today.strftime("%B %Y"):
+                subpage = find_subpage(file_name)
+                if subpage in uploader_talk_text:
+                    out("Aware of DR", color="white")
+                    return
+                else:
+                    nominator = Nominator(file_name, cat, subpage=subpage)
+            else:
+                nominator = Nominator(file_name, cat)
+
+            print(" %s - %s - %s " % (nominator, file_name, Uploader) )
+
+            Path(".logs").mkdir(parents=True, exist_ok=True)
+            m_log = ".logs/%s.csv" % today.strftime("%B_%Y")
+            if not os.path.isfile(m_log):open(m_log, 'w').close()
+            with open(m_log, "r") as f:
+                stored_data = f.read()
+
+            storeData(file_name, Uploader, cat, nominator, m_log)
+
+            if file_name in stored_data:
+                out("%s was processed once." % file_name, color="white")
+                continue
 
             if Uploader == last_editor(file_name, link=False):
-                out("We don't want the bot to notify if Uploader asked for deletion", color="white")
+                out("Uploader %s , is the last editor" % Uploader, color="white")
+                continue
+
+            if Uploader == nominator:
+                out("Uploader %s is the nominatortor himself." % Uploader, color="white")
                 continue
 
             rights_array = pywikibot.User(SITE, Uploader).groups(force=True)
 
             if 'bot' in rights_array or 'bot' in Uploader.lower():
-                out("We don't want the bot to notify another bot", color="white")
+                out("Uploader %s is a robot." % Uploader, color="white")
                 continue
-
-            uploader_talk_page = pywikibot.User(SITE, Uploader).getUserTalkPage()
-
-            uploader_talk_text = uploader_talk_page.get()
 
             if file_name in uploader_talk_text:
-                out("%s is Already notified for %s " % (Uploader, file_name) , color="white")
+                out("%s knows about deletion of %s . " % (Uploader, file_name) , color="white")
                 continue
 
-            if total_messages(uploader_talk_text) > 4:
-                out("%s\'s too many files are marked for deletion. Will not spam them, not notifying for %s " % (Uploader, file_name) , color="white")
+            if total_messages(uploader_talk_text) > 6:
+                out("%s\'s too many files are marked for deletion. Will not spam him, not notifying for %s " % (Uploader, file_name) , color="white")
                 continue
-
-            print(file_name)
-
-            print(Uploader)
 
             dict = {
                 "Advertisements for speedy deletion": "{{subst:User:Deletion Notification Bot/NOADS|1=%s}}" % file_name,
@@ -129,14 +194,19 @@ def Notify(cat):
                 "Media without a source as of %s" % today.strftime("%-d %B %Y") : "{{subst:Image source |1=%s}}" % file_name,
             }
 
-            message = ( "\n" + dict.get(cat) + "\nI am a software, please do not ask me any questions but at the [https://commons.wikimedia.org/wiki/Commons:Help_desk help desk]. //~~~~" )
+            if nominator:
+                nominator_details = "\nNominated for deletion by [[User:%s]]." % nominator
+            else:
+                nominator_details = ""
+
+            message = ( "\n" + dict.get(cat) + nominator_details + "\nI am a software, please do not ask me any questions but the user who nominated your file for deletion or at the [https://commons.wikimedia.org/wiki/Commons:Help_desk help desk]. //~~~~" )
 
             if cat == "Deletion requests %s" % today.strftime("%B %Y"):
-                subpage = find_subpage(file_name)
                 message = message.replace("|2=", "|2=%s" % subpage)
-            
+
             new_text = uploader_talk_text + message
-            summary = "Notification of [[Category:%s|%s]] - [[:%s]]" % (cat,cat,file_name)
+            summary = "Notification of [[Category:%s|%s]] - [[:%s]]" % (cat, cat, file_name)
+
             try:
                 commit(uploader_talk_text, new_text, uploader_talk_page, summary)
             except:

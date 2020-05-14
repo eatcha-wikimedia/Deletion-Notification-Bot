@@ -4,6 +4,7 @@ import pywikibot
 from datetime import datetime
 from pywikibot import pagegenerators, logentries
 from pathlib import Path
+today = datetime.utcnow()
 
 
 CSV_file = os.path.dirname(os.path.realpath(__file__)) + ".logs/deletion_data.csv"

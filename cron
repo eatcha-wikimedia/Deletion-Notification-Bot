@@ -1,0 +1,2 @@
+23 * * * * jsub -once -continuous -quiet -mem 1g -N pre_dn_bot python3 /data/project/eatchabot/Deletion-Notification-Bot/pre_deletion_notice.py
+

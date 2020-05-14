@@ -6,13 +6,12 @@ from pywikibot import pagegenerators, logentries
 from pathlib import Path
 today = datetime.utcnow()
 
-
-CSV_file = os.path.dirname(os.path.realpath(__file__)) + ".logs/deletion_data.csv"
-
 def Log_info(IsAware, FileName,UploaderName):
-  with open(CSV_file,'a') as fd:
-    NewFileRow = "\n{c_a}, {c_b}, {c_c}".format(c_a=IsAware,c_b=FileName,c_c=UploaderName)
-    fd.write(NewFileRow)
+    CSV_file = os.path.dirname(os.path.realpath(__file__)) + ".logs/post_deletion_%s.csv" % today.strftime("%B_%Y")
+    if not os.path.isfile(CSV_file):open(CSV_file, 'w').close()
+    with open(CSV_file,'a') as fd:
+        NewFileRow = "\n{c_a}, {c_b}, {c_c}".format(c_a=IsAware,c_b=FileName,c_c=UploaderName)
+        fd.write(NewFileRow)
 
 def AwarenessCheck(FileName,UploaderTalkPage):
     if FileName in UploaderTalkPage.get():

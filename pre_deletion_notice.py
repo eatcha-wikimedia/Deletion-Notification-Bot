@@ -106,6 +106,8 @@ def Nominator(file_name, cat, subpage=None):
                 'missing permission',
                 'dw no source',
                 'no permission since',
+                '{{speedy',
+                
             ]
             if any(word in text_to_search for word in key_words):
                 break

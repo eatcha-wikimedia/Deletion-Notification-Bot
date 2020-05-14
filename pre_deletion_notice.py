@@ -91,7 +91,6 @@ def Nominator(file_name, cat, subpage=None):
     def del_nominator(filename):
         history = (pywikibot.Page(SITE, filename)).revisions(content=True, reverse=True)
         for data in history:
-            print(data)
             content = data['slots']['main']['*']
             comment = data.comment
             user = data.user
@@ -148,7 +147,7 @@ def Notify(cat):
             else:
                 nominator = Nominator(file_name, cat)
 
-            print(" %s - %s - %s " % (nominator, file_name, Uploader) )
+            out(" %s - %s - %s " % (nominator, file_name, Uploader) , color="magenta")
 
             Path(".logs").mkdir(parents=True, exist_ok=True)
             m_log = ".logs/%s.csv" % today.strftime("%B_%Y")

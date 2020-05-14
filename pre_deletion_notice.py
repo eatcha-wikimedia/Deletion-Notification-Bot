@@ -91,7 +91,7 @@ def Nominator(file_name, cat, subpage=None):
     def del_nominator(filename):
         history = (pywikibot.Page(SITE, filename)).revisions(content=True, reverse=True)
         for data in history:
-            content = (data.slots['main']['*'])
+            content = data['slots']['main']['*']
             comment = data.comment
             user = data.user
             text_to_search = (comment + "\n" + content).lower()

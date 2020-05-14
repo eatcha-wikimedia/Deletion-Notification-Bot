@@ -157,11 +157,11 @@ def Notify(cat):
             with open(m_log, "r") as f:
                 stored_data = f.read()
 
-            storeData(file_name, Uploader, cat, nominator, m_log)
-
             if file_name in stored_data:
                 out("%s was processed once." % file_name, color="white")
                 continue
+
+            storeData(file_name, Uploader, cat, nominator, m_log)
 
             if Uploader == last_editor(file_name, link=False):
                 out("Uploader %s , is the last editor" % Uploader, color="white")

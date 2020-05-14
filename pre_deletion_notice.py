@@ -149,7 +149,7 @@ def Notify(cat):
             else:
                 nominator = Nominator(file_name, cat)
 
-            out(" %s - %s - %s " % (nominator, file_name, Uploader) , color="yellow")
+            out("\n\n %s - %s - %s " % (nominator, file_name, Uploader) , color="yellow")
 
             Path(".logs").mkdir(parents=True, exist_ok=True)
             m_log = ".logs/%s.csv" % today.strftime("%B_%Y")

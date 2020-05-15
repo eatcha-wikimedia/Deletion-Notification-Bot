@@ -165,7 +165,7 @@ def Notify(cat):
 
             storeData(file_name, Uploader, cat, nominator, m_log)
 
-            if "moved page" in (next((pywikibot.Page(SITE, filename)).revisions(reverse=True,total =1)).comment):
+            if "moved page" in (next((pywikibot.Page(SITE, file_name)).revisions(reverse=True,total =1)).comment):
                 out("%s is just a redirect." % file_name, color="white")
                 continue
 

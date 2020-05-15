@@ -15,22 +15,14 @@ def commit(old_text, new_text, page, summary):
     summary = summary + ".  [[Commons:Bots/Requests/Deletion Notification Bot| Report Bugs / Suggest improvements]] (trial run)"
     page.put(new_text, summary=summary, watchArticle=True, minorEdit=False)
 
-def last_editor(filename, link=True):
+def recent_editor(file_name):
     """User that uploaded the file."""
-    history = (pywikibot.Page(SITE, filename)).revisions(reverse=False, total=1)
-    for info in history:
-        username = (info.user)
+    history = (pywikibot.Page(SITE, file_name)).revisions(reverse=False, total=1)
+    for data in history:
+        username = (data.user)
     if not history:
         return "Unknown"
-    if link:
-        return "[[User:%s|%s]]" % (username, username)
     return username
-
-def AwarenessCheck(FileName,UploaderTalkPage):
-    if FileName in UploaderTalkPage.get():
-        return "Yes"
-    else:
-        return "No"
 
 def out(text, newline=True, date=False, color=None):
     """output some text to the consoloe / log."""
@@ -54,16 +46,6 @@ def uploader(filename, link=True):
         return "[[User:%s|%s]]" % (username, username)
     return username
 
-# def last_edit(text):
-#     time_stamps = re.findall(r"[0-9]{1,2}:[0-9]{1,2},\s[0-9]{1,2}\s[a-zA-Z]{1,9}\s[0-9]{4}\s\(UTC\)", text)
-#     for time_stamp in time_stamps:
-#         last_edit_time = time_stamp
-#     try:
-#         dt = ( (datetime.utcnow()) - datetime.strptime(last_edit_time, '%H:%M, %d %B %Y (UTC)') )
-#     except UnboundLocalError:
-#         return 0
-#     return int(dt.days * 24 + dt.seconds // 3600)
-
 def find_subpage(file_name):
     page_text = pywikibot.Page(SITE, file_name).get()
     try:
@@ -72,10 +54,10 @@ def find_subpage(file_name):
         subpage = file_name
     return subpage.strip()
 
-def storeData(file_name, UserName, cat, nominator, m_log):
+def storeData(file_name, Uploader, cat, nominator, m_log):
     with open(m_log, mode='a') as data_file:
         writer = csv.writer(data_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
-        writer.writerow([file_name, UserName, cat, nominator])
+        writer.writerow([file_name, Uploader, cat, nominator])
 
 def Nominator(file_name, cat, subpage=None):
 
@@ -164,7 +146,7 @@ def Notify(cat):
                 out("%s is just a redirect." % file_name, color="white")
                 continue
 
-            if Uploader == last_editor(file_name, link=False):
+            if Uploader == recent_editor(file_name):
                 out("Uploader %s , is the last editor" % Uploader, color="white")
                 continue
 
@@ -211,6 +193,7 @@ def Notify(cat):
             except:
                 pass
 
+
 def main(*args):
     global SITE
     args = pywikibot.handle_args(*args)
@@ -231,7 +214,7 @@ def main(*args):
 
     for cat in Deletion_Cats:
         Notify(cat)
-        
+
 
 if __name__ == "__main__":
     try:

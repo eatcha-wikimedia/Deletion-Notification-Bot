@@ -1,1 +1,1 @@
-19,49 * * * * jsub -once -quiet -mem 1g -N pre_dn_bot /data/project/eatchabot/venv/bin/python3 /data/project/eatchabot/Deletion-Notification-Bot/pre_deletion_notice.py -pt:5 -dir:/data/project/eatchabot/Deletion-Notification-Bot
+10,30,50 * * * * jsub -once -quiet -N pre_dn_bot /data/project/eatchabot/venv/bin/python3 /data/project/eatchabot/Deletion-Notification-Bot/pre_deletion_notice.py -pt:0 -dir:/data/project/eatchabot/Deletion-Notification-Bot

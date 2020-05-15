@@ -140,6 +140,7 @@ def Notify(cat):
             uploader_talk_page = pywikibot.User(SITE, Uploader).getUserTalkPage()
             uploader_talk_text = uploader_talk_page.get()
 
+
             if cat == "Deletion requests %s" % today.strftime("%B %Y"):
                 subpage = find_subpage(file_name)
                 if subpage in uploader_talk_text:
@@ -163,6 +164,10 @@ def Notify(cat):
                 continue
 
             storeData(file_name, Uploader, cat, nominator, m_log)
+
+            if "moved page" in (next((pywikibot.Page(SITE, filename)).revisions(reverse=True,total =1)).comment):
+                out("%s is just a redirect." % file_name, color="white")
+                continue
 
             if Uploader == last_editor(file_name, link=False):
                 out("Uploader %s , is the last editor" % Uploader, color="white")

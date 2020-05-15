@@ -54,24 +54,15 @@ def uploader(filename, link=True):
         return "[[User:%s|%s]]" % (username, username)
     return username
 
-def last_edit(text):
-    time_stamps = re.findall(r"[0-9]{1,2}:[0-9]{1,2},\s[0-9]{1,2}\s[a-zA-Z]{1,9}\s[0-9]{4}\s\(UTC\)", text)
-    for time_stamp in time_stamps:
-        last_edit_time = time_stamp
-    try:
-        dt = ( (datetime.utcnow()) - datetime.strptime(last_edit_time, '%H:%M, %d %B %Y (UTC)') )
-    except UnboundLocalError:
-        return 0
-    return int(dt.days * 24 + dt.seconds // 3600)
-
-def total_messages(uploader_talk_text):
-    le = last_edit(uploader_talk_text)
-    if le > 23:
-        return 0
-    count = uploader_talk_text.count("//[[User:Deletion Notification Bot|Deletion Notification Bot]]")
-    if count > 4 and le < 1:
-        return 9**9
-    return count
+# def last_edit(text):
+#     time_stamps = re.findall(r"[0-9]{1,2}:[0-9]{1,2},\s[0-9]{1,2}\s[a-zA-Z]{1,9}\s[0-9]{4}\s\(UTC\)", text)
+#     for time_stamp in time_stamps:
+#         last_edit_time = time_stamp
+#     try:
+#         dt = ( (datetime.utcnow()) - datetime.strptime(last_edit_time, '%H:%M, %d %B %Y (UTC)') )
+#     except UnboundLocalError:
+#         return 0
+#     return int(dt.days * 24 + dt.seconds // 3600)
 
 def find_subpage(file_name):
     page_text = pywikibot.Page(SITE, file_name).get()
@@ -189,10 +180,6 @@ def Notify(cat):
 
             if file_name in uploader_talk_text:
                 out("%s knows about deletion of %s . " % (Uploader, file_name) , color="white")
-                continue
-
-            if total_messages(uploader_talk_text) > 6:
-                out("%s\'s too many files are marked for deletion. Will not spam him, not notifying for %s " % (Uploader, file_name) , color="white")
                 continue
 
             dict = {

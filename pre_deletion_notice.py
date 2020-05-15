@@ -138,6 +138,10 @@ def Notify(cat):
 
             Uploader = uploader(file_name, link=False)
             uploader_talk_page = pywikibot.User(SITE, Uploader).getUserTalkPage()
+
+            if uploader_talk_page.isRedirectPage():
+                uploader_talk_page = uploader_talk_page.getRedirectTarget()
+
             uploader_talk_text = uploader_talk_page.get()
 
 

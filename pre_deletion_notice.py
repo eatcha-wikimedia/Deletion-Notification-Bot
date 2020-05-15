@@ -117,7 +117,6 @@ def Notify(cat):
 
             uploader_talk_text = uploader_talk_page.get()
 
-
             if cat == "Deletion requests %s" % today.strftime("%B %Y"):
                 subpage = find_subpage(file_name)
                 if subpage in uploader_talk_text:
@@ -128,7 +127,7 @@ def Notify(cat):
             else:
                 nominator = Nominator(file_name, cat)
 
-            out("\n\n %s , Uploaded by User:%s and nominated by User:%s " % (file_name,   Uploader, nominator) , color="yellow")
+            out("\n\n %s , Uploaded by User:%s and nominated by User:%s " % (file_name, Uploader, nominator) , color="yellow")
 
             Path(".logs").mkdir(parents=True, exist_ok=True)
             m_log = ".logs/%s.csv" % today.strftime("%B_%Y")

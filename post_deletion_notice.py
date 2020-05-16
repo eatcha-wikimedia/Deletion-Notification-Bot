@@ -6,30 +6,27 @@ from pywikibot import pagegenerators, logentries
 from pathlib import Path
 today = datetime.utcnow()
 
+post_del_file = ".logs/post_deletion_%s.csv" % today.strftime("%B_%Y")
+
 def Log_info(IsAware, FileName,UploaderName):
-    CSV_file = ".logs/post_deletion_%s.csv" % today.strftime("%B_%Y")
-    if not os.path.isfile(CSV_file):open(CSV_file, 'w').close()
-    with open(CSV_file,'a') as fd:
+    if not os.path.isfile(post_del_file):open(post_del_file, 'w').close()
+    with open(post_del_file,'a') as fd:
         NewFileRow = "\n{c_a}, {c_b}, {c_c}".format(c_a=IsAware,c_b=FileName,c_c=UploaderName)
         fd.write(NewFileRow)
 
 def AwarenessCheck(FileName,UploaderTalkPage):
-    if FileName in UploaderTalkPage.get():
-        return "Yes"
-    else:
-        return "No"
+    if FileName in UploaderTalkPage.get():return "Yes"
+    else:return "No"
 
 def uploader(FileName):
     return([info for info in pywikibot.site.APISite.logevents(SITE,logtype="upload",page=FileName,reverse=True,total=1)])[0].user()
 
 def commit(old_text, new_text, page, summary):
-    """Show diff and submit text to page."""
     out("\nAbout to make changes at : '%s'" % page.title())
     pywikibot.showDiff(old_text, new_text)
     #page.put(new_text, summary=summary, watchArticle=True, minorEdit=False)
 
 def out(text, newline=True, date=False, color=None):
-    """Just output some text to the consoloe or log."""
     if color:
         text = "\03{%s}%s\03{default}" % (color, text)
     dstr = (
@@ -60,10 +57,16 @@ def Notify():
     with open(m_log, "r") as f:
         stored_data = f.read()
 
+    try:
+        with open(post_del_file, "r") as f:
+            post_del_data = f.read()
+    except:
+        post_del_data = ""
+
     for deleted_file in gen:
         FileName = deleted_file.title()
-        
-        if FileName in stored_data:
+
+        if FileName in (stored_data + "\n" + post_del_data):
             out("%s was processed by the pre script." % FileName, color="white")
             continue
         

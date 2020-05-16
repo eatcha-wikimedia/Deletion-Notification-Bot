@@ -42,6 +42,15 @@ def deletion_info(FileName):
         admin = log.data.get("user")
     return reason, admin
 
+def post_data():
+    try:
+        with open(post_del_file, "r") as f:
+            post_del_data = f.read()
+    except:
+        post_del_data = ""
+    
+    return post_del_data
+
 def Notify():
     gen  = pagegenerators.LogeventsPageGenerator(
         logtype = "delete",
@@ -50,18 +59,12 @@ def Notify():
         start = pywikibot.site.APISite.getcurrenttimestamp(SITE),
         end = (today-timedelta(days=1)).strftime("%Y%m%d%H%M%S"),
         )
-
+    post_del_data = post_data()
     Path(".logs").mkdir(parents=True, exist_ok=True)
     m_log = ".logs/%s.csv" % today.strftime("%B_%Y")
     if not os.path.isfile(m_log):open(m_log, 'w').close()
     with open(m_log, "r") as f:
         stored_data = f.read()
-
-    try:
-        with open(post_del_file, "r") as f:
-            post_del_data = f.read()
-    except:
-        post_del_data = ""
 
     for deleted_file in gen:
         FileName = deleted_file.title()

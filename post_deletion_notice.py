@@ -39,17 +39,11 @@ def out(text, newline=True, date=False, color=None):
     )
     pywikibot.stdout("%s%s" % (dstr, text), newline=newline)
 
-def get_delete_reason(FileName):
-    reason = "No reason found"
-    logevents = pywikibot.site.APISite.logevents(
-        SITE,
-        logtype = "delete",
-        page = FileName,
-        reverse = True,
-        )
-    for log in logevents:
-        reason = log.comment()
-    return reason
+def deletion_info(FileName):
+    for log in pywikibot.site.APISite.logevents(SITE,logtype="delete",page=FileName):
+        reason = log.data.get("comment")
+        admin = log.data.get("user")
+    return reason, admin
 
 def Notify():
     gen  = pagegenerators.LogeventsPageGenerator(
@@ -92,7 +86,8 @@ def Notify():
             out("""%s is deleted, it was uploaded by %s and they were %s of it's Deletion.""" % (FileName,user.title(), ("aware" if IsAware == "Yes" else "not aware")),)
             if IsAware == "No":
                 old_text = user.getUserTalkPage().get()
-                new_text = ( old_text + "\n{{subst:User:Deletion Notification Bot/deleted notice|1=%s}}Reason for deletion : %s \n~~~~" % (FileName, get_delete_reason(FileName)))
+                reason, admin = deletion_info(FileName)
+                new_text = ( old_text + "\n{{subst:User:Deletion Notification Bot/deleted notice|1=%s}}Deleted by [[User:%s]]. Reason for deletion : %s . \n~~~~" % (FileName, admin, reason))
                 summary = "Notify user about deletion of [[%s]]" % FileName
                 commit(old_text, new_text, user.getUserTalkPage(), summary)
             else:

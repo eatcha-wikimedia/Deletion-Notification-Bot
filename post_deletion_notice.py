@@ -63,8 +63,6 @@ def Notify():
     for deleted_file in gen:
         FileName = deleted_file.title()
         
-        print(pywikibot.site.APISite.getcurrenttimestamp(SITE))
-        
         if FileName in stored_data:
             out("%s was processed by the pre script." % FileName, color="white")
             continue

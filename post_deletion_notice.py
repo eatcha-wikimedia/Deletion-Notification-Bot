@@ -20,7 +20,7 @@ def AwarenessCheck(FileName,UploaderTalkPage):
         return "No"
 
 def uploader(FileName):
-    return next(pywikibot.site.APISite.logevents(SITE, logtype="upload", page=FileName, reverse=True, total=1)).user()
+    return([info for info in pywikibot.site.APISite.logevents(SITE,logtype="upload",page=FileName,reverse=True,total=1)])[0].user()
 
 def commit(old_text, new_text, page, summary):
     """Show diff and submit text to page."""

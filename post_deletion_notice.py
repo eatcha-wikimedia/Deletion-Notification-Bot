@@ -19,6 +19,9 @@ def AwarenessCheck(FileName,UploaderTalkPage):
     else:
         return "No"
 
+def uploader(FileName):
+    return next(pywikibot.site.APISite.logevents(SITE, logtype="upload", page=FileName, reverse=True, total=1)).user()
+
 def commit(old_text, new_text, page, summary):
     """Show diff and submit text to page."""
     out("\nAbout to make changes at : '%s'" % page.title())
@@ -76,15 +79,9 @@ def Notify():
             continue
         except:
             pass
-        logevents = pywikibot.site.APISite.logevents(
-            SITE,
-            logtype = "upload",
-            page = FileName,
-            reverse = True,
-            total = 1,
-            )
-        for log in logevents:
-            Uploader = log.user()
+
+            Uploader = uploader(FileName)
+
             rights_array = pywikibot.User(SITE,Uploader).groups(force=True)
             if 'bot' in rights_array or 'bot' in Uploader.lower():
                 out("We don't want the bot to notify another bot", color="white")

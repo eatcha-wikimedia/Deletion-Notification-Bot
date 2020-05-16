@@ -73,7 +73,10 @@ def Notify():
         except:
             pass
 
-            Uploader = uploader(FileName)
+            try:
+                Uploader = uploader(FileName)
+            except IndexError:
+                continue
 
             rights_array = pywikibot.User(SITE,Uploader).groups(force=True)
             if 'bot' in rights_array or 'bot' in Uploader.lower():

@@ -1,7 +1,7 @@
 import os
 import csv
 import pywikibot
-from datetime import datetime
+from datetime import datetime, timedelta
 from pywikibot import pagegenerators, logentries
 from pathlib import Path
 today = datetime.utcnow()
@@ -50,7 +50,8 @@ def Notify():
         logtype = "delete",
         site = SITE,
         namespace = 6,
-        start = pywikibot.site.APISite.getcurrenttimestamp(SITE)
+        start = pywikibot.site.APISite.getcurrenttimestamp(SITE),
+        end = (today-timedelta(days=1)).strftime("%Y%m%d%H%M%S"),
         )
 
     Path(".logs").mkdir(parents=True, exist_ok=True)

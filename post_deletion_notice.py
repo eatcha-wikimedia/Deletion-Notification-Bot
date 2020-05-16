@@ -89,11 +89,14 @@ def Notify():
                 out("We don't want the bot to notify another bot", color="white")
                 continue
             user = pywikibot.User(SITE, Uploader)
-            IsAware = AwarenessCheck(FileName,user.getUserTalkPage())
+            uploader_talk_page = user.getUserTalkPage()
+            if uploader_talk_page.isRedirectPage():
+                uploader_talk_page = uploader_talk_page.getRedirectTarget()
+            IsAware = AwarenessCheck(FileName,uploader_talk_page)
             Log_info(IsAware,user.title(),FileName,)
             out("""%s is deleted, it was uploaded by %s and they were %s of it's Deletion.""" % (FileName,user.title(), ("aware" if IsAware == "Yes" else "not aware")),)
             if IsAware == "No":
-                old_text = user.getUserTalkPage().get()
+                old_text = uploader_talk_page.get()
                 reason, admin = deletion_info(FileName)
                 new_text = ( old_text + "\n{{subst:User:Deletion Notification Bot/deleted notice|1=%s}}Deleted by [[User:%s]]. Reason for deletion : %s . \n~~~~" % (FileName, admin, reason))
                 summary = "Notify user about deletion of [[%s]]" % FileName

@@ -43,7 +43,7 @@ class DeletedFile:
     def log_it(self):
         if not os.path.isfile(post_del_file):open(post_del_file, 'w').close()
         with open(post_del_file,'a') as fd:
-            NewFileRow = "\n{ca}, {cb}, {cc}, {cd}".format(ca=self.is_aware(),cb=self.file_name,cc=self.uploader(),cd=self.deleter_admin())
+            NewFileRow = "\n{ca}, {cb}, {cc}".format(ca=self.file_name,cb=self.uploader(),cc=self.deleter_admin())
             fd.write(NewFileRow)
 
     def out_file_info(self):
@@ -51,7 +51,6 @@ class DeletedFile:
         out("Uploader : %s" % self.uploader(), color = "yellow")
         out("Deleted by : %s" % self.deleter_admin(), color = "yellow")
         out("Delete reason : %s" % self.delete_comment(), color = "yellow")
-        out("\n\n")
 
     def notify_uploader(self):
         old_text = self.uploader_talk_page().get()
@@ -60,12 +59,7 @@ class DeletedFile:
         summary = "[[%s]] was recently deleted by %s " % (self.file_name, admin)
         commit(old_text, new_text, self.uploader_talk_page(), summary)
     
-    def handle(self):
-        logged_files = logged_data()
-        if self.file_name in logged_files:
-            return
-        else:
-            self.log_it()
+    def handle(self, logged_files):
         try:
             pywikibot.Page(SITE, self.file_name).get(get_redirect=True, force=True)
             return
@@ -73,6 +67,12 @@ class DeletedFile:
             Uploader = self.uploader()
             if Uploader == "Unknown":
                 return
+
+            if self.file_name in logged_files:
+                return
+            else:
+                self.log_it()
+
             if 'bot' in self.uploader_rights_list() or 'bot' in Uploader.lower():
                 out("We don't want the bot to notify another bot", color="white")
                 return
@@ -80,6 +80,7 @@ class DeletedFile:
             if self.is_aware() == "No":
                 self.notify_uploader()
             else:
+                out("uploader aware of the file\n\n")
                 return
 
 def logged_data():
@@ -118,8 +119,9 @@ def main():
         start = pywikibot.site.APISite.getcurrenttimestamp(SITE),
         end = (today-timedelta(days=1)).strftime("%Y%m%d%H%M%S")
     )
+    logged_files = logged_data()
     for deleted_file in gen:
-        DeletedFile(deleted_file.title()).handle()
+        DeletedFile(deleted_file.title()).handle(logged_files)
 
 
 if __name__ == "__main__":

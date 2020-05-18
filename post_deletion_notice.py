@@ -26,6 +26,7 @@ class DeletedFile:
         except:
             return "Unknown"
 
+    @property
     def uploader_ec(self):
         user = pywikibot.User(SITE, self.uploader())
         return user.editCount(force=True)
@@ -83,6 +84,7 @@ class DeletedFile:
         out("Uploader : %s" % self.uploader(), color = "yellow")
         out("Deleted by : %s" % self.deleter_admin(), color = "yellow")
         out("Delete reason : %s" % self.delete_comment(), color = "yellow")
+        out("Uploader ec : %d" % self.uploader_ec, color = "yellow")
 
     def notify_uploader(self):
         old_text = self.uploader_talk_page().get()

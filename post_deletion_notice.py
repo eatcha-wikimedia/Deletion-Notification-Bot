@@ -132,7 +132,7 @@ def logged_data():
 def commit(old_text, new_text, page, summary):
     out("\nAbout to make changes at : '%s'" % page.title())
     pywikibot.showDiff(old_text, new_text)
-    #page.put(new_text, summary=summary, watchArticle=True, minorEdit=False)
+    page.put(new_text, summary=summary, watchArticle=True, minorEdit=False)
 
 def out(text, newline=True, date=False, color=None):
     if color:

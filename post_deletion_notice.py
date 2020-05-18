@@ -144,9 +144,12 @@ def out(text, newline=True, date=False, color=None):
     )
     pywikibot.stdout("%s%s" % (dstr, text), newline=newline)
 
-def main():
+def main(*args):
     global SITE
+    args = pywikibot.handle_args(*args)
     SITE = pywikibot.Site()
+    if not SITE.logged_in():
+        SITE.login()
     gen  = pagegenerators.LogeventsPageGenerator(
         logtype = "delete",
         site = SITE,namespace = 6,

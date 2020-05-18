@@ -26,6 +26,12 @@ class DeletedFile:
         except:
             return "Unknown"
 
+    def uploader_ec(self):
+        user = pywikibot.User(SITE, self.uploader())
+        return user.editCount(force=True)
+        
+
+
     def uploader_rights_list(self):
         return pywikibot.User(SITE, self.uploader()).groups(force=True)
 
@@ -36,9 +42,35 @@ class DeletedFile:
             uploader_talk_page = uploader_talk_page.getRedirectTarget()
         return uploader_talk_page
 
+    def subpage_editors(self):
+        subpage = "Commons:Deletion requests/%s" % self.file_name
+        page = pywikibot.Page(SITE, subpage)
+        hist = page.revisions()
+        editors = []
+        for d in hist:
+            editors.append(d.user)
+        return editors
+
     def is_aware(self):
-        if self.file_name in self.uploader_talk_page().get():return "Yes"
-        else:return "No"
+        try:
+            subpage_users = self.subpage_editors()
+        except pywikibot.exceptions.NoPage:
+            subpage_users = []
+
+        if self.uploader_ec > 1000:
+            return "Yes"
+
+        elif self.uploader() == self.deleter_admin():
+            return "Yes"
+
+        elif self.uploader() in subpage_users:
+            return "Yes"
+
+        elif self.file_name in self.uploader_talk_page().get():
+            return "Yes"
+
+        else:
+            return "No"
 
     def log_it(self):
         if not os.path.isfile(post_del_file):open(post_del_file, 'w').close()

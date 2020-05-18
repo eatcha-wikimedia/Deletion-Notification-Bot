@@ -43,7 +43,7 @@ class DeletedFile:
     def log_it(self):
         if not os.path.isfile(post_del_file):open(post_del_file, 'w').close()
         with open(post_del_file,'a') as fd:
-            NewFileRow = "\n{c_a}, {c_b}, {c_c}".format(c_a=self.is_aware(),c_b=self.file_name,c_c=self.uploader())
+            NewFileRow = "\n{ca}, {cb}, {cc}, {cd}".format(ca=self.is_aware(),cb=self.file_name,cc=self.uploader(),cd=self.deleter_admin())
             fd.write(NewFileRow)
 
     def out_file_info(self):
@@ -124,7 +124,6 @@ def main():
     global SITE
     SITE = pywikibot.Site()
     Notify()
-    
 
 if __name__ == "__main__":
   try:

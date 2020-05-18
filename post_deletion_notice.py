@@ -4,8 +4,8 @@ import pywikibot
 from datetime import datetime, timedelta
 from pywikibot import pagegenerators, logentries
 from pathlib import Path
-today = datetime.utcnow()
 
+today = datetime.utcnow()
 post_del_file = ".logs/post_deletion_%s.csv" % today.strftime("%B_%Y")
 
 class DeletedFile:
@@ -59,6 +59,28 @@ class DeletedFile:
         new_text = ( old_text + "\n{{subst:User:Deletion Notification Bot/deleted notice|1=%s}}Deleted by [[User:%s]]. Reason for deletion : %s . \n~~~~" % (self.file_name, admin, reason))
         summary = "[[%s]] was recently deleted by %s " % (self.file_name, admin)
         commit(old_text, new_text, self.uploader_talk_page(), summary)
+    
+    def handle(self):
+        logged_files = logged_data()
+        if self.file_name in logged_files:
+            return
+        else:
+            self.log_it()
+        try:
+            pywikibot.Page(SITE, self.file_name).get(get_redirect=True, force=True)
+            return
+        except:
+            Uploader = self.uploader()
+            if Uploader == "Unknown":
+                return
+            if 'bot' in self.uploader_rights_list() or 'bot' in Uploader.lower():
+                out("We don't want the bot to notify another bot", color="white")
+                return
+            self.out_file_info()
+            if self.is_aware() == "No":
+                self.notify_uploader()
+            else:
+                return
 
 def logged_data():
     try:
@@ -71,39 +93,6 @@ def logged_data():
     with open(m_log, "r") as f:
         stored_data = f.read()
     return (post_del_data + "\n" + stored_data)
-
-def Notify():
-    gen  = pagegenerators.LogeventsPageGenerator(
-        logtype = "delete",
-        site = SITE,namespace = 6,
-        start = pywikibot.site.APISite.getcurrenttimestamp(SITE),
-        end = (
-            today-timedelta(days=1)
-        ).strftime("%Y%m%d%H%M%S")
-    )
-    logged_files = logged_data()
-
-    for deleted_file in gen:
-        file_obj = DeletedFile(deleted_file.title())
-        if file_obj.file_name in logged_files:
-            continue
-        else:
-            file_obj.log_it()
-        try:
-            pywikibot.Page(SITE, file_obj.file_name).get(get_redirect=True, force=True)
-            continue
-        except:
-            Uploader = file_obj.uploader()
-            if Uploader == "Unknown":
-                continue
-            if 'bot' in file_obj.uploader_rights_list() or 'bot' in Uploader.lower():
-                out("We don't want the bot to notify another bot", color="white")
-                continue
-            file_obj.out_file_info()
-            if file_obj.is_aware() == "No":
-                file_obj.notify_uploader()
-            else:
-                continue
 
 def commit(old_text, new_text, page, summary):
     out("\nAbout to make changes at : '%s'" % page.title())
@@ -123,7 +112,15 @@ def out(text, newline=True, date=False, color=None):
 def main():
     global SITE
     SITE = pywikibot.Site()
-    Notify()
+    gen  = pagegenerators.LogeventsPageGenerator(
+        logtype = "delete",
+        site = SITE,namespace = 6,
+        start = pywikibot.site.APISite.getcurrenttimestamp(SITE),
+        end = (today-timedelta(days=1)).strftime("%Y%m%d%H%M%S")
+    )
+    for deleted_file in gen:
+        DeletedFile(deleted_file.title()).handle()
+
 
 if __name__ == "__main__":
   try:

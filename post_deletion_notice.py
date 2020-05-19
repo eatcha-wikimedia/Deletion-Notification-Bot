@@ -30,8 +30,6 @@ class DeletedFile:
     def uploader_ec(self):
         user = pywikibot.User(SITE, self.uploader())
         return user.editCount(force=True)
-        
-
 
     def uploader_rights_list(self):
         return pywikibot.User(SITE, self.uploader()).groups(force=True)
@@ -58,7 +56,12 @@ class DeletedFile:
         except pywikibot.exceptions.NoPage:
             subpage_users = []
 
+        self_del_list = ["author's request", "uploader request", "author request", "G7"]
+
         if self.uploader_ec > 1000:
+            return "Yes"
+
+        elif any(s in self.delete_comment() for s in self_del_list):
             return "Yes"
 
         elif self.uploader() == self.deleter_admin():

@@ -56,7 +56,7 @@ class DeletedFile:
         except pywikibot.exceptions.NoPage:
             subpage_users = []
 
-        self_del_list = ["author's request", "uploader request", "author request", "G7"]
+        self_del_list = ["author's request", "uploader request", "author request", "G7", "user request"]
 
         if self.uploader_ec > 1000:
             return "Yes"
@@ -135,6 +135,7 @@ def logged_data():
 def commit(old_text, new_text, page, summary):
     out("\nAbout to make changes at : '%s'" % page.title())
     pywikibot.showDiff(old_text, new_text)
+    summary = summary + ".  [[Commons:Bots/Requests/Deletion Notification Bot| Report Bugs / Suggest improvements]] (trial run)"
     page.put(new_text, summary=summary, watchArticle=True, minorEdit=False)
 
 def out(text, newline=True, date=False, color=None):

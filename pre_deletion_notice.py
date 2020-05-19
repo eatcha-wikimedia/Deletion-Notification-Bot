@@ -176,7 +176,7 @@ def Notify(cat):
             }
 
             if nominator:
-                nominator_details = "\nNominated for deletion by [[User:%s]]." % nominator
+                nominator_details = "\nNominated for deletion by [https://commons.wikimedia.org/wiki/User:%s User:%s]." % (nominator, nominator)
             else:
                 nominator_details = ""
 

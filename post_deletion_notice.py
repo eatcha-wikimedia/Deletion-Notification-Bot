@@ -7,7 +7,7 @@ from pathlib import Path
 
 today = datetime.utcnow()
 post_del_file = ".logs/post_deletion_%s.csv" % today.strftime("%B_%Y")
-
+last_ten_users = []
 
 class DeletedFile:
     def __init__(self, file_name):
@@ -56,7 +56,8 @@ class DeletedFile:
             subpage_users = self.subpage_editors()
         except pywikibot.exceptions.NoPage:
             subpage_users = []
-        
+    
+        global last_ten_users
         if len(last_ten_users) > 9:
             del last_ten_users
         else:
@@ -167,8 +168,6 @@ def out(text, newline=True, date=False, color=None):
 
 def main(*args):
     global SITE
-    global last_ten_users
-    last_ten_users = []
     args = pywikibot.handle_args(*args)
     SITE = pywikibot.Site()
     if not SITE.logged_in():

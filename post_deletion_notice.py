@@ -59,7 +59,7 @@ class DeletedFile:
     
         global last_ten_users
         if len(last_ten_users) > 9:
-            del last_ten_users
+            last_ten_users = []
         else:
             last_ten_users.append(self.uploader())
             out(last_ten_users)

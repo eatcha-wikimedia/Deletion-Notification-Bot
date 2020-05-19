@@ -56,7 +56,14 @@ class DeletedFile:
         except pywikibot.exceptions.NoPage:
             subpage_users = []
 
-        self_del_list = ["author's request", "uploader request", "author request", "G7", "user request"]
+        self_del_list = [
+            "author's request",
+            "uploader request",
+            "author request",
+            "G7",
+            "user request",
+            "roken redirect", #works as [Bb]
+        ]
 
         if self.uploader_ec > 1000:
             return "Yes"

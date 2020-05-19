@@ -8,9 +8,9 @@ from pathlib import Path
 today = datetime.utcnow()
 post_del_file = ".logs/post_deletion_%s.csv" % today.strftime("%B_%Y")
 
-last_ten_users = []
 
 class DeletedFile:
+    last_ten_users = []
     def __init__(self, file_name):
         self.file_name = file_name
     
@@ -62,6 +62,7 @@ class DeletedFile:
             del last_ten_users
         else:
             last_ten_users.append(self.uploader())
+            out(last_ten_users)
             count_of_this_uploader = last_ten_users.count(self.uploader())
             if count_of_this_uploader > 3:
                 return "Yes"

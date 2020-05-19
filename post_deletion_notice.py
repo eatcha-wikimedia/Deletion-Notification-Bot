@@ -62,7 +62,6 @@ class DeletedFile:
             last_ten_users = []
         else:
             last_ten_users.append(self.uploader())
-            out(last_ten_users)
             count_of_this_uploader = last_ten_users.count(self.uploader())
             if count_of_this_uploader > 3:
                 return "Yes"

@@ -74,7 +74,7 @@ class DeletedFile:
             "roken redirect", #works as [Bb]
         ]
 
-        if self.uploader_ec > 1000:
+        if self.uploader_ec > 5000:
             return "Yes"
 
         elif any(s in self.delete_comment() for s in self_del_list):

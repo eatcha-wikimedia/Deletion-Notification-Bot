@@ -109,7 +109,7 @@ class DeletedFile:
     def notify_uploader(self):
         old_text = self.uploader_talk_page().get()
         reason, admin = self.delete_comment(), self.deleter_admin()
-        new_text = ( old_text + "\n{{subst:User:Deletion Notification Bot/deleted notice|1=%s}}Deleted by [https://commons.wikimedia.org/wiki/User:%s User:%s]. Reason for deletion : %s . \n~~~~" % (self.file_name, admin, admin, reason))
+        new_text = ( old_text + "\n{{subst:User:Deletion Notification Bot/deleted notice|1=%s}}Deleted by [https://commons.wikimedia.org/wiki/User:%s User:%s]. Reason for deletion : %s . \n~~~~" % (self.file_name, admin.replace(" ", "_"), admin, reason))
         summary = "[[%s]] was recently deleted by User:%s " % (self.file_name, admin)
         commit(old_text, new_text, self.uploader_talk_page(), summary)
 

@@ -142,6 +142,10 @@ def Notify(cat):
 
             storeData(file_name, Uploader, cat, nominator, m_log)
 
+            if pywikibot.User(SITE, Uploader).isBlocked(force=True):
+                out("uploader %s is banned." % Uploader, color="white")
+                continue
+
             if "moved page" in (next((pywikibot.Page(SITE, file_name)).revisions(reverse=True,total =1)).comment):
                 out("%s is just a redirect." % file_name, color="white")
                 continue

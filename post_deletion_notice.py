@@ -7,7 +7,7 @@ from pathlib import Path
 
 today = datetime.utcnow()
 post_del_file = ".logs/post_deletion_%s.csv" % today.strftime("%B_%Y")
-last_20_users = []
+last_100_users = []
 
 class DeletedFile:
     def __init__(self, file_name):
@@ -56,12 +56,12 @@ class DeletedFile:
             subpage_users = self.subpage_editors()
         except pywikibot.exceptions.NoPage:
             subpage_users = []
-        global last_20_users
-        if len(last_20_users) > 20:
-            last_20_users = []
+        global last_100_users
+        if len(last_100_users) > 100:
+            last_100_users = []
         else:
-            last_20_users.append(self.uploader())
-            count_of_this_uploader = last_20_users.count(self.uploader())
+            last_100_users.append(self.uploader())
+            count_of_this_uploader = last_100_users.count(self.uploader())
             if count_of_this_uploader > 3:
                 return "Yes"
 

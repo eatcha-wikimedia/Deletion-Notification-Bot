@@ -72,6 +72,7 @@ class DeletedFile:
             "G7",
             "user request",
             "roken redirect", #works as [Bb]
+            "#REDIRECT",
         ]
 
         if self.uploader_ec > 5000:

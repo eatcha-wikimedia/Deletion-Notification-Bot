@@ -131,6 +131,11 @@ class DeletedFile:
                 out("We don't want the bot to notify another bot", color="white")
                 return
             self.out_file_info()
+
+            if pywikibot.User(SITE, Uploader).isBlocked(force=True):
+                out("uploader %s is banned." % Uploader, color="white")
+                return
+
             if self.is_aware() == "No":
                 self.notify_uploader()
             else:

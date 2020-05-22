@@ -5,6 +5,8 @@ import re
 from pathlib import Path
 import csv
 import os
+import urllib3
+import json
 
 today = datetime.utcnow()
 
@@ -14,6 +16,14 @@ def commit(old_text, new_text, page, summary):
     pywikibot.showDiff(old_text, new_text)
     summary = summary + ".  [[Commons:Bots/Requests/Deletion Notification Bot| Report Bugs / Suggest improvements]] (trial run)"
     page.put(new_text, summary=summary, watchArticle=True, minorEdit=False)
+
+def is_locked(user):
+    http = urllib3.PoolManager()
+    r = http.request('GET', 'https://login.wikimedia.org/w/api.php?action=query&meta=globaluserinfo&format=json&guiuser=%s' % user)
+    data = json.loads(r.data.decode('utf-8'))
+    if (data.get("query").get("globaluserinfo").get("locked", False)) is False:
+        return False
+    return True
 
 def recent_editor(file_name):
     """User that uploaded the file."""
@@ -142,8 +152,8 @@ def Notify(cat):
 
             storeData(file_name, Uploader, cat, nominator, m_log)
 
-            if pywikibot.User(SITE, Uploader).isBlocked(force=True):
-                out("uploader %s is banned." % Uploader, color="white")
+            if pywikibot.User(SITE, Uploader).isBlocked(force=True) or is_locked(Uploader):
+                out("uploader %s is locked/blocked." % Uploader, color="white")
                 continue
 
             if "moved page" in (next((pywikibot.Page(SITE, file_name)).revisions(reverse=True,total =1)).comment):

@@ -18,7 +18,8 @@ def commit(old_text, new_text, page, summary):
     page.put(new_text, summary=summary, watchArticle=True, minorEdit=False)
 
 def is_locked(user):
-    http = urllib3.PoolManager()
+    user_agent = {'user-agent': 'User:Deletion Notification Bot @ wikimedia Commons'}
+    http = urllib3.PoolManager(headers=user_agent)
     r = http.request('GET', 'https://login.wikimedia.org/w/api.php?action=query&meta=globaluserinfo&format=json&guiuser=%s' % user)
     data = json.loads(r.data.decode('utf-8'))
     if (data.get("query").get("globaluserinfo").get("locked", False)) is False:

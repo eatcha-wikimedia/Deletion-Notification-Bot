@@ -1,5 +1,7 @@
 import os
 import csv
+import urllib3
+import json
 import pywikibot
 from datetime import datetime, timedelta
 from pywikibot import pagegenerators, logentries
@@ -20,6 +22,14 @@ class DeletedFile:
     def delete_comment(self):
         for log in pywikibot.site.APISite.logevents(SITE,logtype="delete",page=self.file_name):
             return log.data.get("comment")
+
+    def is_locked(self):
+        http = urllib3.PoolManager()
+        r = http.request('GET', 'https://login.wikimedia.org/w/api.php?action=query&meta=globaluserinfo&format=json&guiuser=%s' % self.uploader())
+        data = json.loads(r.data.decode('utf-8'))
+        if (data.get("query").get("globaluserinfo").get("locked", False)) is False:
+            return False
+        return True
 
     def uploader(self):
         try:
@@ -127,10 +137,16 @@ class DeletedFile:
             else:
                 self.log_it()
 
+
+            self.out_file_info()
+
             if 'bot' in self.uploader_rights_list() or 'bot' in Uploader.lower():
                 out("We don't want the bot to notify another bot", color="white")
                 return
-            self.out_file_info()
+
+            if self.is_locked():
+                out("Uploader is global locked")
+                return
 
             if pywikibot.User(SITE, Uploader).isBlocked(force=True):
                 out("uploader %s is banned." % Uploader, color="white")

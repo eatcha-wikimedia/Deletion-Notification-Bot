@@ -196,7 +196,7 @@ def main(*args):
         logtype = "delete",
         site = SITE,namespace = 6,
         start = pywikibot.site.APISite.getcurrenttimestamp(SITE),
-        end = (today-timedelta(hours=2)).strftime("%Y%m%d%H%M%S")
+        end = (today-timedelta(hours=12)).strftime("%Y%m%d%H%M%S")
     )
     logged_files = logged_data()
     for deleted_file in gen:

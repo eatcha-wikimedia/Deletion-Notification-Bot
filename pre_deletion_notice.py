@@ -9,7 +9,7 @@ import urllib3
 import json
 
 today = datetime.utcnow()
-last_100_users = []
+last_150_users = []
 
 
 def commit(old_text, new_text, page, summary):
@@ -169,13 +169,12 @@ def Notify(cat):
                 continue
 
             storeData(file_name, Uploader, cat, nominator, m_log)
-            
-            global last_100_users
-            if len(last_100_users) > 100:
-                last_100_users = []
+            global last_150_users
+            if len(last_150_users) > 100:
+                last_150_users = []
             else:
-                last_100_users.append(Uploader)
-                count_of_this_uploader = last_100_users.count(Uploader)
+                last_150_users.append(Uploader)
+                count_of_this_uploader = last_150_users.count(Uploader)
                 if count_of_this_uploader > 6:
                     out("Too many dr for %s , will not notify for more than 7 files in a single run. Avoid spamming." % Uploader, color="white")
                     continue

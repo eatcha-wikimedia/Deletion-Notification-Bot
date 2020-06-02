@@ -117,7 +117,18 @@ def Nominator(file_name, cat, subpage=None):
     else:
         return None
 
-def get_copyvio_reason():
+def get_copyvio_reason(file_name):
+    text = pywikibot.Page(SITE, file_name).get()
+    match = re.search(r"{{(?:\s*?|)[Cc]opyvio(?:\s*?|)\|(.*?)}}", text)
+    if match:
+        reason=match.group(1).replace("1=", " ").replace("|", " ")
+    else:
+        if re.search(r"{{(?:\s*?|)logo(.*?)}}", text):
+            reason = "File is a non free logo"
+        else:
+             reason = ""
+    return reason
+        
     
 
 def Notify(cat):
@@ -216,7 +227,7 @@ def Notify(cat):
                 message = message.replace("|2=", "|2=%s" % subpage)
 
             if cat == "Copyright violations":
-                copyvio_reason = get_copyvio_reason()
+                copyvio_reason = get_copyvio_reason(file_name)
                 message = message.replace("|2=", "|2=%s" % copyvio_reason)
                 
 

@@ -95,6 +95,7 @@ def Nominator(file_name, cat, subpage=None):
                 '{{speedy',
                 'no source since',
                 '{{db-f9',
+                '{{logo}}',
                 
             ]
             if any(word in text_to_search for word in key_words):

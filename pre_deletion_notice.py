@@ -117,6 +117,20 @@ def Nominator(file_name, cat, subpage=None):
     else:
         return None
 
+def get_copyvio_reason(file_name):
+    text = pywikibot.Page(SITE, file_name).get()
+    match = re.search(r"{{(?:\s*?|)[Cc]opyvio(?:\s*?|)\|(.*?)}}", text)
+    if match:
+        reason=match.group(1).replace("1=", " ").replace("|", " ")
+    else:
+        if re.search(r"{{(?:\s*?|)logo(.*?)}}", text):
+            reason = "File is a non free logo"
+        else:
+             reason = ""
+    return reason
+        
+    
+
 def Notify(cat):
     gen = pagegenerators.CategorizedPageGenerator(pywikibot.Category(SITE, cat))
     for page in gen:
@@ -193,7 +207,7 @@ def Notify(cat):
 
             dict = {
                 "Advertisements for speedy deletion": "{{subst:User:Deletion Notification Bot/NOADS|1=%s}}" % file_name,
-                "Copyright violations": "{{subst:copyvionote|1=%s}}" % file_name,
+                "Copyright violations": "{{subst:copyvionote|1=%s|2=}}" % file_name,
                 "Other speedy deletions": "{{subst:User:Deletion Notification Bot/SDEL|1=%s}}" % file_name,
                 "Personal files for speedy deletion": "{{subst:User:Deletion Notification Bot/personalNO|1=%s}}" % file_name,
                 "Deletion requests %s" % today.strftime("%B %Y") : "{{subst:idw|1=%s|2=}}" % file_name,
@@ -207,10 +221,15 @@ def Notify(cat):
             else:
                 nominator_details = ""
 
-            message = ( "\n" + dict.get(cat) + nominator_details + "\nI am a software, please do not ask me any questions but the user who nominated your file for deletion or at the [https://commons.wikimedia.org/wiki/Commons:Help_desk help desk]. //~~~~" )
+            message = ( "\n" + dict.get(cat) + nominator_details + "\nI am a software, please do not ask me questions but the user who nominated your file for deletion or at our [[Commons:Help_desk|Help Desk]]. //~~~~" )
 
             if cat == "Deletion requests %s" % today.strftime("%B %Y"):
                 message = message.replace("|2=", "|2=%s" % subpage)
+
+            if cat == "Copyright violations":
+                copyvio_reason = get_copyvio_reason(file_name)
+                message = message.replace("|2=", "|2=%s" % copyvio_reason)
+                
 
             new_text = uploader_talk_text + message
             summary = "Notification of [[Category:%s|%s]] - [[:%s]]" % (cat, cat, file_name)

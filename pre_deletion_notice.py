@@ -29,7 +29,7 @@ def is_locked(user):
     return True
 
 def recent_editor(file_name):
-    """User that uploaded the file."""
+    """Recent most editor for file."""
     history = (pywikibot.Page(SITE, file_name)).revisions(reverse=False, total=1)
     for data in history:
         username = (data.user)

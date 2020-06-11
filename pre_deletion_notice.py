@@ -129,8 +129,16 @@ def get_copyvio_reason(file_name):
         else:
              reason = ""
     return reason
+
+def get_other_speedy_reason(file_name):
+    text = pywikibot.Page(SITE, file_name).get()
+    match = re.search(r"{{(?:\s*?|)(?:[Ss]peedy|[Ss]peedy\s*?[Dd]elete)(?:\s*?|)\|(.*?)}}", text)
+    if match:
+        reason=match.group(1).replace("1=", " ").replace("|", " ")
+    else:
+        reason = ""
+    return reason
         
-    
 
 def Notify(cat):
     gen = pagegenerators.CategorizedPageGenerator(pywikibot.Category(SITE, cat))
@@ -208,7 +216,7 @@ def Notify(cat):
             dict = {
                 "Advertisements for speedy deletion": "{{subst:User:Deletion Notification Bot/NOADS|1=%s}}" % file_name,
                 "Copyright violations": "{{subst:copyvionote|1=%s|2=}}" % file_name,
-                "Other speedy deletions": "{{subst:User:Deletion Notification Bot/SDEL|1=%s}}" % file_name,
+                "Other speedy deletions": "{{subst:User:Deletion Notification Bot/SDEL|1=%s|2=}}" % file_name,
                 "Personal files for speedy deletion": "{{subst:User:Deletion Notification Bot/personalNO|1=%s}}" % file_name,
                 "Deletion requests %s" % today.strftime("%B %Y") : "{{subst:idw|1=%s|2=}}" % file_name,
                 "Media without a license as of %s" % today.strftime("%-d %B %Y") : "{{subst:image license|1=%s}}" % file_name,
@@ -229,6 +237,10 @@ def Notify(cat):
             if cat == "Copyright violations":
                 copyvio_reason = get_copyvio_reason(file_name)
                 message = message.replace("|2=", "|2=%s" % copyvio_reason)
+            
+            if cat == "Other speedy deletions":
+                ot_sd_reason = get_other_speedy_reason(file_name)
+                message = message.replace("|2=", "|2=%s" % ot_sd_reason)
                 
 
             new_text = uploader_talk_text + message

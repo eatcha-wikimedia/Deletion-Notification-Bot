@@ -187,6 +187,10 @@ def Notify(cat):
                     out("Too many dr for %s , will not notify for more than 7 files in a single run. Avoid spamming." % Uploader, color="white")
                     continue
 
+            # see https://commons.wikimedia.org/w/index.php?title=Commons:Administrators%27_noticeboard/User_problems&oldid=426513688#Notification_by_bot_problems
+            if nominator == "AntiCompositeBot":
+                continue
+
             if pywikibot.User(SITE, Uploader).isBlocked(force=True) or is_locked(Uploader):
                 out("uploader %s is locked/blocked." % Uploader, color="white")
                 continue

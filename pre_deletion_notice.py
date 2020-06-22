@@ -224,7 +224,7 @@ def Notify(cat):
                 out("Uploader %s is a robot." % Uploader, color="white")
                 continue
 
-            if file_name in uploader_talk_text:
+            if file_name.replace("File:") in uploader_talk_text:
                 out("%s knows about deletion of %s . " % (Uploader, file_name) , color="white")
                 continue
 
@@ -244,7 +244,7 @@ def Notify(cat):
             else:
                 nominator_details = ""
 
-            message = ( "\n" + dict.get(cat) + nominator_details + "\nI am a software, please do not ask me questions but the user who nominated your file for deletion or at our [[Commons:Help_desk|Help Desk]]. //~~~~" )
+            message = ( "\n" + dict.get(cat) + nominator_details + "\nI am a computer program; please do not ask me questions but ask the user who nominated your file for deletion or at our [[Commons:Help_desk|Help Desk]]. //~~~~" )
 
             if cat == "Deletion requests %s" % today.strftime("%B %Y"):
                 message = message.replace("|2=", "|2=%s" % subpage)
@@ -294,3 +294,4 @@ if __name__ == "__main__":
         main()
     finally:
         pywikibot.stopme()
+

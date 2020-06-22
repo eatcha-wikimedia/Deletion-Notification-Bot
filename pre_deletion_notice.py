@@ -224,7 +224,7 @@ def Notify(cat):
                 out("Uploader %s is a robot." % Uploader, color="white")
                 continue
 
-            if file_name.replace("File:") in uploader_talk_text:
+            if file_name.replace("File:", "") in uploader_talk_text:
                 out("%s knows about deletion of %s . " % (Uploader, file_name) , color="white")
                 continue
 

@@ -251,10 +251,12 @@ def Notify(cat):
 
             if cat == "Copyright violations":
                 copyvio_reason = get_copyvio_reason(file_name)
+                copyvio_reason = re.sub("\(\[\[User talk.*?Talkpagelinktext|[{}]","",copyvio_reason)
                 message = message.replace("|2=", "|2=%s" % copyvio_reason)
             
             if cat == "Other speedy deletions":
                 ot_sd_reason = get_other_speedy_reason(file_name)
+                ot_sd_reason = re.sub("\(\[\[User talk.*?Talkpagelinktext|[{}]","",ot_sd_reason)
                 message = message.replace("|2=", "|2=%s" % ot_sd_reason)
                 
 

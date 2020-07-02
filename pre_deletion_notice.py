@@ -10,8 +10,6 @@ from requests.exceptions import HTTPError
 import json
 
 today = datetime.utcnow()
-last_150_users = []
-
 
 def commit(old_text, new_text, page, summary):
     """Show diff and submit text to page."""
@@ -150,32 +148,44 @@ def get_other_speedy_reason(file_name):
         reason = ""
     return reason
         
-
+g_file_count = 0
 def Notify(cat):
     gen = pagegenerators.CategorizedPageGenerator(pywikibot.Category(SITE, cat))
+    uploader_and_uploads = {}
     for page in gen:
         file_name = page.title()
         if file_name.startswith("File:"):
 
             Uploader = uploader(file_name, link=False)
-            uploader_talk_page = pywikibot.User(SITE, Uploader).getUserTalkPage()
+            
+            if uploader_and_uploads.get(Uploader):
+                files_list = uploader_and_uploads.get(Uploader)
+                files_list.append(file_name)
+                uploader_and_uploads[Uploader] = files_list
+            else:
+                uploader_and_uploads[Uploader] = [file_name]
+    
+    for Uploader, files_list in uploader_and_uploads.items():
+        new_text = ""
+        uploader_talk_page = pywikibot.User(SITE, Uploader).getUserTalkPage()
+        if uploader_talk_page.isRedirectPage():
+            uploader_talk_page = uploader_talk_page.getRedirectTarget()
+        uploader_talk_text = uploader_talk_page.get()
 
-            if uploader_talk_page.isRedirectPage():
-                uploader_talk_page = uploader_talk_page.getRedirectTarget()
-
-            uploader_talk_text = uploader_talk_page.get()
+        file_count = 0
+        for file_name in files_list:
+            global  g_file_count
+            g_file_count += 1
 
             if cat == "Deletion requests %s" % today.strftime("%B %Y"):
                 subpage = find_subpage(file_name)
+                nominator = Nominator(file_name, cat, subpage=subpage)
                 if subpage in uploader_talk_text:
-                    out("Aware of DR", color="white")
-                    return
-                else:
-                    nominator = Nominator(file_name, cat, subpage=subpage)
+                    _is_aware = True
             else:
                 nominator = Nominator(file_name, cat)
 
-            out("\n\n %s , Uploaded by User:%s and nominated by User:%s " % (file_name, Uploader, nominator) , color="yellow")
+            out("\n\n %d\n %s\n Uploaded by User:%s\n nominated by User:%s" % (g_file_count, file_name, Uploader, nominator) , color="yellow")
 
             Path(".logs").mkdir(parents=True, exist_ok=True)
             m_log = ".logs/%s.csv" % today.strftime("%B_%Y")
@@ -188,18 +198,14 @@ def Notify(cat):
                 continue
 
             storeData(file_name, Uploader, cat, nominator, m_log)
-            global last_150_users
-            if len(last_150_users) > 100:
-                last_150_users = []
-            else:
-                last_150_users.append(Uploader)
-                count_of_this_uploader = last_150_users.count(Uploader)
-                if count_of_this_uploader > 6:
-                    out("Too many dr for %s , will not notify for more than 7 files in a single run. Avoid spamming." % Uploader, color="white")
+            
+            if cat == "Deletion requests %s" % today.strftime("%B %Y"):
+                if _is_aware:
+                    out("Aware of DR, subpage found on uploader talk page.", color="white")
                     continue
 
-            # see https://commons.wikimedia.org/w/index.php?title=Commons:Administrators%27_noticeboard/User_problems&oldid=426513688#Notification_by_bot_problems
             if nominator == "AntiCompositeBot":
+                out("AntiCompositeBot's task")
                 continue
 
             if pywikibot.User(SITE, Uploader).isBlocked(force=True) or is_locked(Uploader):
@@ -238,35 +244,63 @@ def Notify(cat):
                 "Media missing permission as of %s" % today.strftime("%-d %B %Y") : "{{subst:image permission|1=%s}}" % file_name,
                 "Media without a source as of %s" % today.strftime("%-d %B %Y") : "{{subst:Image source |1=%s}}" % file_name,
             }
-
-            if nominator:
-                nominator_details = "\nNominated for deletion by {{Noping|%s}}." % nominator
-            else:
-                nominator_details = ""
-
-            message = ( "\n" + dict.get(cat) + nominator_details + "\nI am a computer program; please do not ask me questions but ask the user who nominated your file for deletion or at our [[Commons:Help_desk|Help Desk]]. //~~~~" )
-
-            if cat == "Deletion requests %s" % today.strftime("%B %Y"):
-                message = message.replace("|2=", "|2=%s" % subpage)
-
-            if cat == "Copyright violations":
-                copyvio_reason = get_copyvio_reason(file_name)
-                copyvio_reason = re.sub("\(\[\[User talk.*?Talkpagelinktext|[{}]","",copyvio_reason)
-                message = message.replace("|2=", "|2=%s" % copyvio_reason)
             
-            if cat == "Other speedy deletions":
-                ot_sd_reason = get_other_speedy_reason(file_name)
-                ot_sd_reason = re.sub("\(\[\[User talk.*?Talkpagelinktext|[{}]","",ot_sd_reason)
-                message = message.replace("|2=", "|2=%s" % ot_sd_reason)
+            file_count += 1
+
+            if file_count <= 1:
+                if nominator:
+                    nominator_details = """<p style="font-size:0.8em;font-family:'Stencil Std'">\nUser who nominated the file for deletion (Nominator) : {{Noping|%s}}.</p>""" % nominator
+                else:
+                    nominator_details = ""
+                message = ("\n" + dict.get(cat) + nominator_details)
+
+                if cat == "Deletion requests %s" % today.strftime("%B %Y"):
+                    message = message.replace("|2=", "|2=%s" % subpage)
+    
+                if cat == "Copyright violations":
+                    copyvio_reason = get_copyvio_reason(file_name)
+                    copyvio_reason = re.sub("\(\[\[User talk.*?Talkpagelinktext|[{}]","",copyvio_reason)
+                    message = message.replace("|2=", "|2=%s" % copyvio_reason)
                 
+                if cat == "Other speedy deletions":
+                    ot_sd_reason = get_other_speedy_reason(file_name)
+                    ot_sd_reason = re.sub("\(\[\[User talk.*?Talkpagelinktext|[{}]","",ot_sd_reason)
+                    message = message.replace("|2=", "|2=%s" % ot_sd_reason)
+                    
+                new_text = new_text + message
+                summary = "Notification - [[Category:%s|%s]] - [[:%s]]" % (cat, cat, file_name)
 
-            new_text = uploader_talk_text + message
-            summary = "Notification of [[Category:%s|%s]] - [[:%s]]" % (cat, cat, file_name)
+            else:
+                if "And also:" not in new_text:
+                    new_text = new_text + "\nAnd also:"
+                if nominator:
+                    nominator_details = "Nominator : {{Noping|%s}}" % nominator
+                else:
+                    nominator_details = ""
+                
+                reason = ""
+                
+                if cat == "Copyright violations":
+                    copyvio_reason = re.sub("\(\[\[User talk.*?Talkpagelinktext|[{}]","",get_copyvio_reason(file_name))
+                    reason = "- Reason : %s" % copyvio_reason
 
-            try:
-                commit(uploader_talk_text, new_text, uploader_talk_page, summary)
-            except:
-                pass
+                _file_info = """* [[:%s]] <p style="font-size:0.8em;font-family:'Stencil Std'">( %s %s )</p>""" % (file_name , nominator_details, reason)
+                new_text = new_text + _file_info
+                
+                summary = "Notification - [[Category:%s|%s]] - [[:%s]] and %d other files" % (cat, cat, file_name, file_count)
+        
+        if file_count < 1:
+            continue
+
+        new_text = new_text + "\nI'm a computer program; please don't ask me questions but ask the user who nominated your file(s) for deletion or at our [[Commons:Help_desk|Help Desk]]. //~~~~"
+        
+        new_text = uploader_talk_page.get() + new_text
+        try:
+            commit(uploader_talk_text, new_text, uploader_talk_page, summary)
+        except:
+            pass
+                
+            
 
 
 def main(*args):

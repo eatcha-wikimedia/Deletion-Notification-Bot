@@ -357,6 +357,7 @@ def main(*args):
         ]
 
     for cat in Deletion_Cats:
+        out("Crunching data for %s " % cat, color = "red")
         Notify(cat)
 
 

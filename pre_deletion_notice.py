@@ -155,7 +155,7 @@ def get_copyvio_reason(file_name):
         elif "{{sd|f6" in l_text:
             reason = "[[Commons:Criteria_for_speedy_deletion#F6|License laundering]]"
 
-        elif "{{sd|f7}}" in l_text:
+        elif "{{sd|f7" in l_text:
             reason = "[[Commons:Criteria_for_speedy_deletion#F7|File is empty, corrupt, or in a disallowed format]]"
 
         elif "{{sd|f8" in l_text:

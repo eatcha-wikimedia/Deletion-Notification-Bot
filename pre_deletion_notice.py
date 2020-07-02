@@ -284,10 +284,10 @@ def Notify(cat):
                     copyvio_reason = re.sub("\(\[\[User talk.*?Talkpagelinktext|[{}]","",get_copyvio_reason(file_name))
                     reason = "- Reason : %s" % copyvio_reason
 
-                _file_info = """\n* [[:%s]] <p style="font-size:0.8em;font-family:'Stencil Std'">( %s %s )</p>""" % (file_name , nominator_details, reason)
+                _file_info = """\n* [[:%s]] <span style="font-size:0.8em;font-family:'Stencil Std'">( %s %s )</span>""" % (file_name , nominator_details, reason)
                 new_text = new_text + _file_info
-                
-                summary = "Notification - [[Category:%s|%s]] - [[:%s]] and %d other files" % (cat, cat, file_name, file_count)
+
+                summary = "Notification - [[Category:%s|%s]] - [[:%s]] and %d other files" % (cat, cat, file_name, (file_count-1))
         
         if file_count < 1:
             continue

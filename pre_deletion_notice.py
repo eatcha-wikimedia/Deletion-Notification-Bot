@@ -137,35 +137,38 @@ def get_copyvio_reason(file_name):
         if re.search(r"{{(?:\s*?|)logo(.*?)}}", text):
             reason = "File is a non free logo"
 
-        elif "{{sd|f1}}" in l_text:
+        elif "{{sd|f1" in l_text:
             reason = "[[Commons:Criteria_for_speedy_deletion#F1|Apparent copyright violation]]"
         
-        elif "{{sd|f2}}" in l_text:
+        elif "{{sd|f2" in l_text:
             reason = "[[Commons:Criteria_for_speedy_deletion#F2|Fair use content]]"
 
-        elif "{{sd|f3}}" in l_text:
+        elif "{{sd|f3" in l_text:
             reason = "[[Commons:Criteria_for_speedy_deletion#F3|Derivative work of non-free content]]"
 
-        elif "{{sd|f4}}" in l_text:
+        elif "{{sd|f4" in l_text:
             reason = "[[Commons:Criteria_for_speedy_deletion#F4|Failed license review]]"
 
-        elif "{{sd|f5}}" in l_text:
+        elif "{{sd|f5" in l_text:
             reason = "[[Commons:Criteria_for_speedy_deletion#F5|Missing essential information]]"
 
-        elif "{{sd|f6}}" in l_text:
+        elif "{{sd|f6" in l_text:
             reason = "[[Commons:Criteria_for_speedy_deletion#F6|License laundering]]"
 
         elif "{{sd|f7}}" in l_text:
             reason = "[[Commons:Criteria_for_speedy_deletion#F7|File is empty, corrupt, or in a disallowed format]]"
 
-        elif "{{sd|f8}}" in l_text:
+        elif "{{sd|f8" in l_text:
             reason = "[[Commons:Criteria_for_speedy_deletion#F8|Exact or scaled-down duplicate]]"
 
-        elif "{{sd|f9}}" in l_text:
+        elif "{{sd|f9" in l_text:
             reason = "[[Commons:Criteria_for_speedy_deletion#F9|The file contains additional embedded data in the form of a password protected archive.]]"
 
-        elif "{{sd|f10}}" in l_text:
+        elif "{{sd|f10" in l_text:
             reason = "[[Commons:Criteria_for_speedy_deletion#F10|Personal photos by non-contributors]]"
+
+        elif "{{copyvio}}" in l_text:
+            reason = "Copyright infringement / piracy"
 
         else:
             reason = ""

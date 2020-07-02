@@ -129,14 +129,46 @@ def Nominator(file_name, cat, subpage=None):
 
 def get_copyvio_reason(file_name):
     text = pywikibot.Page(SITE, file_name).get()
+    l_text = text.lower()
     match = re.search(r"{{(?:\s*?|)[Cc]opyvio(?:\s*?|)\|(.*?)}}", text)
     if match:
         reason=match.group(1).replace("1=", " ").replace("|", " ")
     else:
         if re.search(r"{{(?:\s*?|)logo(.*?)}}", text):
             reason = "File is a non free logo"
+
+        elif "{{sd|f1}}" in l_text:
+            reason = "[[Commons:Criteria_for_speedy_deletion#F1|Apparent copyright violation]]"
+        
+        elif "{{sd|f2}}" in l_text:
+            reason = "[[Commons:Criteria_for_speedy_deletion#F2|Fair use content]]"
+
+        elif "{{sd|f3}}" in l_text:
+            reason = "[[Commons:Criteria_for_speedy_deletion#F3|Derivative work of non-free content]]"
+
+        elif "{{sd|f4}}" in l_text:
+            reason = "[[Commons:Criteria_for_speedy_deletion#F4|Failed license review]]"
+
+        elif "{{sd|f5}}" in l_text:
+            reason = "[[Commons:Criteria_for_speedy_deletion#F5|Missing essential information]]"
+
+        elif "{{sd|f6}}" in l_text:
+            reason = "[[Commons:Criteria_for_speedy_deletion#F6|License laundering]]"
+
+        elif "{{sd|f7}}" in l_text:
+            reason = "[[Commons:Criteria_for_speedy_deletion#F7|File is empty, corrupt, or in a disallowed format]]"
+
+        elif "{{sd|f8}}" in l_text:
+            reason = "[[Commons:Criteria_for_speedy_deletion#F8|Exact or scaled-down duplicate]]"
+
+        elif "{{sd|f9}}" in l_text:
+            reason = "[[Commons:Criteria_for_speedy_deletion#F9|The file contains additional embedded data in the form of a password protected archive.]]"
+
+        elif "{{sd|f10}}" in l_text:
+            reason = "[[Commons:Criteria_for_speedy_deletion#F10|Personal photos by non-contributors]]"
+
         else:
-             reason = ""
+            reason = ""
     return reason
 
 def get_other_speedy_reason(file_name):
@@ -277,11 +309,11 @@ def Notify(cat):
                     nominator_details = "Nominator : {{Noping|%s}}" % nominator
                 else:
                     nominator_details = ""
-                
+
                 reason = ""
                 
                 if cat == "Copyright violations":
-                    copyvio_reason = re.sub("\(\[\[User talk.*?Talkpagelinktext|[{}]","",get_copyvio_reason(file_name))
+                    copyvio_reason = re.sub("\(\[\[User talk.*?Talkpagelinktext|[{}]","", get_copyvio_reason(file_name))
                     reason = "- Reason : %s" % copyvio_reason
 
                 _file_info = """\n* [[:%s]] <span style="font-size:0.8em;font-family:'Stencil Std'">( %s %s )</span>""" % (file_name , nominator_details, reason)

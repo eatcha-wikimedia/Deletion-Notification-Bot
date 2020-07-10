@@ -270,16 +270,16 @@ def Notify(cat):
                 continue
 
             dict = {
-                "Advertisements for speedy deletion": "{{subst:User:Deletion Notification Bot/NOADS|1=%s}}" % file_name,
+                "Advertisements for speedy deletion": "{{User:Deletion Notification Bot/NOADS|1=%s}}" % file_name,
                 "Copyright violations": "{{subst:copyvionote|1=%s|2=}}" % file_name,
-                "Other speedy deletions": "{{subst:User:Deletion Notification Bot/SDEL|1=%s|2=}}" % file_name,
-                "Personal files for speedy deletion": "{{subst:User:Deletion Notification Bot/personalNO|1=%s}}" % file_name,
+                "Other speedy deletions": "{{User:Deletion Notification Bot/SDEL|1=%s|2=}}" % file_name,
+                "Personal files for speedy deletion": "{{User:Deletion Notification Bot/personalNO|1=%s}}" % file_name,
                 "Deletion requests %s" % today.strftime("%B %Y") : "{{subst:idw|1=%s|2=}}" % file_name,
                 "Media without a license as of %s" % today.strftime("%-d %B %Y") : "{{subst:image license|1=%s}}" % file_name,
                 "Media missing permission as of %s" % today.strftime("%-d %B %Y") : "{{subst:image permission|1=%s}}" % file_name,
                 "Media without a source as of %s" % today.strftime("%-d %B %Y") : "{{subst:Image source |1=%s}}" % file_name,
             }
-            
+
             file_count += 1
 
             if file_count <= 1:

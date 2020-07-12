@@ -247,7 +247,7 @@ def Notify(cat):
                 out("uploader %s is locked/blocked." % Uploader, color="white")
                 continue
 
-            if "moved page" in (next((pywikibot.Page(SITE, file_name)).revisions(reverse=True,total =1)).comment):
+            if "move" in (next((pywikibot.Page(SITE, file_name)).revisions(reverse=True,total =1)).comment):
                 out("%s is just a redirect." % file_name, color="white")
                 continue
 

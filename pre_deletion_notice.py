@@ -172,6 +172,8 @@ def get_copyvio_reason(file_name):
 
         else:
             reason = ""
+    
+    reason = re.sub(r"[Cc]ategory:",":Category:", reason)
     return reason
 
 def get_other_speedy_reason(file_name):
@@ -181,6 +183,7 @@ def get_other_speedy_reason(file_name):
         reason=match.group(1).replace("1=", " ").replace("|", " ")
     else:
         reason = ""
+    reason = re.sub(r"[Cc]ategory:",":Category:", reason)
     return reason
         
 g_file_count = 0

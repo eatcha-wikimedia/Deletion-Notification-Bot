@@ -21,7 +21,9 @@ class DeletedFile:
     
     def delete_comment(self):
         for log in pywikibot.site.APISite.logevents(SITE,logtype="delete",page=self.file_name):
-            return log.data.get("comment")
+            comment = log.data.get("comment")
+            comment = re.sub(r"[Cc]ategory:",":Category:", comment)
+            return comment
 
     def is_locked(self):
         user_agent = {'user-agent': 'User:Deletion Notification Bot @ wikimedia Commons'}

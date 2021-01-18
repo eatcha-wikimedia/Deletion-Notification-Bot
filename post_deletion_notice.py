@@ -125,10 +125,11 @@ class DeletedFile:
         out("Uploader ec : %d" % self.uploader_ec, color = "yellow")
 
     def notify_uploader(self):
-        old_text = self.uploader_talk_page().get()
         reason, admin = self.delete_comment(), self.deleter_admin()
-        new_text = ( old_text + "\n{{subst:User:Deletion Notification Bot/deleted notice|1=%s|2=%s|3=%s}}~~~~" % ( self.file_name, admin, reason ) )
-        summary = "[[%s]] was recently deleted by User:%s " % (self.file_name, admin)
+        file_name = self.file_name
+        old_text = self.uploader_talk_page().get()
+        new_text = ( old_text + "\n{{subst:User:Deletion Notification Bot/deleted notice|1=%s|2=%s|3=%s}}~~~~" % (file_name, admin, reason))
+        summary = "[[%s]] was recently deleted by User:%s " % (file_name, admin)
         commit(old_text, new_text, self.uploader_talk_page(), summary)
 
     def handle(self, logged_files):

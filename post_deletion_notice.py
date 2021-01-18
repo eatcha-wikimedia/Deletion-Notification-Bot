@@ -7,6 +7,7 @@ import pywikibot
 from datetime import datetime, timedelta
 from pywikibot import pagegenerators, logentries
 from pathlib import Path
+import time
 
 today = datetime.utcnow()
 post_del_file = ".logs/post_deletion_%s.csv" % today.strftime("%B_%Y")
@@ -206,6 +207,7 @@ def main(*args):
     )
     logged_files = logged_data()
     for deleted_file in gen:
+        time.sleep(60*5) # 5 minutes, delay. Incase the admin wanna say something.
         DeletedFile(deleted_file.title()).handle(logged_files)
 
 

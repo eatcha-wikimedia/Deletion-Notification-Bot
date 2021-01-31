@@ -11,20 +11,26 @@ import json
 
 today = datetime.utcnow()
 
+
 def commit(old_text, new_text, page, summary):
     """Show diff and submit text to page."""
     out("\nAbout to make changes at : '%s'" % page.title())
     pywikibot.showDiff(old_text, new_text)
     page.put(new_text, summary=summary, watchArticle=True, minorEdit=False)
 
+
 def is_locked(user):
-    headers = {'user-agent': 'User:Deletion Notification Bot @ wikimedia Commons'}
+    headers = {"user-agent": "User:Deletion Notification Bot @ wikimedia Commons"}
     try:
-        response = requests.get('https://login.wikimedia.org/w/api.php?action=query&meta=globaluserinfo&format=json&guiuser=%s' % user, headers=headers)
+        response = requests.get(
+            "https://login.wikimedia.org/w/api.php?action=query&meta=globaluserinfo&format=json&guiuser=%s"
+            % user,
+            headers=headers,
+        )
     except HTTPError as http_err:
-        print('HTTP error occurred: %s' % http_err)
+        print("HTTP error occurred: %s" % http_err)
     except Exception as err:
-        print('Other error occurred: %s' % err)
+        print("Other error occurred: %s" % err)
 
     if response.ok:
         data = response.json()
@@ -40,32 +46,31 @@ def recent_editor(file_name):
     """Recent most editor for file."""
     history = (pywikibot.Page(SITE, file_name)).revisions(reverse=False, total=1)
     for data in history:
-        username = (data.user)
+        username = data.user
     if not history:
         return "Unknown"
     return username
+
 
 def out(text, newline=True, date=False, color=None):
     """output some text to the consoloe / log."""
     if color:
         text = "\03{%s}%s\03{default}" % (color, text)
-    dstr = (
-        "%s: " % datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
-        if date
-        else ""
-    )
+    dstr = "%s: " % datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S") if date else ""
     pywikibot.stdout("%s%s" % (dstr, text), newline=newline)
+
 
 def uploader(filename, link=True):
     """User that uploaded the file."""
     history = (pywikibot.Page(SITE, filename)).revisions(reverse=True, total=1)
     for info in history:
-        username = (info.user)
+        username = info.user
     if not history:
         return "Unknown"
     if link:
         return "[[User:%s|%s]]" % (username, username)
     return username
+
 
 def find_subpage(file_name):
     page_text = pywikibot.Page(SITE, file_name).get()
@@ -75,44 +80,46 @@ def find_subpage(file_name):
         subpage = file_name
     return subpage.strip()
 
+
 def storeData(file_name, Uploader, cat, nominator, m_log):
-    with open(m_log, mode='a') as data_file:
-        writer = csv.writer(data_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+    with open(m_log, mode="a") as data_file:
+        writer = csv.writer(
+            data_file, delimiter=",", quotechar='"', quoting=csv.QUOTE_MINIMAL
+        )
         writer.writerow([file_name, Uploader, cat, nominator])
 
-def Nominator(file_name, cat, subpage=None):
 
+def Nominator(file_name, cat, subpage=None):
     def del_nominator(filename):
         history = (pywikibot.Page(SITE, filename)).revisions(content=True, reverse=True)
         for data in history:
-            content = data['slots']['main']['*']
+            content = data["slots"]["main"]["*"]
             comment = data.comment
             user = data.user
             text_to_search = (comment + "\n" + content).lower()
-    
+
             key_words = [
-                'delet',
-                'copyvio',
-                'speedydelete',
-                '{{sd',
-                'no license since',
-                'unfree flickr',
-                'missing permission',
-                'dw no source',
-                'no permission since',
-                '{{speedy',
-                'no source since',
-                '{{db-f9',
-                '{{logo}}',
-                
+                "delet",
+                "copyvio",
+                "speedydelete",
+                "{{sd",
+                "no license since",
+                "unfree flickr",
+                "missing permission",
+                "dw no source",
+                "no permission since",
+                "{{speedy",
+                "no source since",
+                "{{db-f9",
+                "{{logo}}",
             ]
             if any(word in text_to_search for word in key_words):
                 break
             else:
-                comment=user=content =" "
+                comment = user = content = " "
         return comment, user, content
 
-    del_comment, del_user, del_content =  del_nominator(file_name)
+    del_comment, del_user, del_content = del_nominator(file_name)
     if not del_user.isspace():
         return del_user
 
@@ -126,19 +133,20 @@ def Nominator(file_name, cat, subpage=None):
     else:
         return None
 
+
 def get_copyvio_reason(file_name):
     text = pywikibot.Page(SITE, file_name).get()
     l_text = text.lower()
     match = re.search(r"{{(?:\s*?|)[Cc]opyvio(?:\s*?|)\|(.*?)}}", text)
     if match:
-        reason=match.group(1).replace("1=", " ").replace("|", " ")
+        reason = match.group(1).replace("1=", " ").replace("|", " ")
     else:
         if re.search(r"{{(?:\s*?|)logo(.*?)}}", text):
             reason = "File is a non free logo"
 
         elif "{{sd|f1" in l_text:
             reason = "[[Commons:Criteria_for_speedy_deletion#F1|Apparent copyright violation]]"
-        
+
         elif "{{sd|f2" in l_text:
             reason = "[[Commons:Criteria_for_speedy_deletion#F2|Fair use content]]"
 
@@ -171,21 +179,27 @@ def get_copyvio_reason(file_name):
 
         else:
             reason = ""
-    
-    reason = re.sub(r"[Cc]ategory:",":Category:", reason)
+
+    reason = re.sub(r"[Cc]ategory:", ":Category:", reason)
     return reason
+
 
 def get_other_speedy_reason(file_name):
     text = pywikibot.Page(SITE, file_name).get()
-    match = re.search(r"{{(?:\s*?|)(?:[Ss]peedy|[Ss]peedy\s*?[Dd]elete)(?:\s*?|)\|(.*?)}}", text)
+    match = re.search(
+        r"{{(?:\s*?|)(?:[Ss]peedy|[Ss]peedy\s*?[Dd]elete)(?:\s*?|)\|(.*?)}}", text
+    )
     if match:
-        reason=match.group(1).replace("1=", " ").replace("|", " ")
+        reason = match.group(1).replace("1=", " ").replace("|", " ")
     else:
         reason = ""
-    reason = re.sub(r"[Cc]ategory:",":Category:", reason)
+    reason = re.sub(r"[Cc]ategory:", ":Category:", reason)
     return reason
-        
+
+
 g_file_count = 0
+
+
 def Notify(cat):
     gen = pagegenerators.CategorizedPageGenerator(pywikibot.Category(SITE, cat))
     uploader_and_uploads = {}
@@ -194,14 +208,14 @@ def Notify(cat):
         if file_name.startswith("File:"):
 
             Uploader = uploader(file_name, link=False)
-            
+
             if uploader_and_uploads.get(Uploader):
                 files_list = uploader_and_uploads.get(Uploader)
                 files_list.append(file_name)
                 uploader_and_uploads[Uploader] = files_list
             else:
                 uploader_and_uploads[Uploader] = [file_name]
-    
+
     for Uploader, files_list in uploader_and_uploads.items():
         new_text = ""
         uploader_talk_page = pywikibot.User(SITE, Uploader).getUserTalkPage()
@@ -211,7 +225,7 @@ def Notify(cat):
 
         file_count = 0
         for file_name in files_list:
-            global  g_file_count
+            global g_file_count
             g_file_count += 1
 
             if cat == "Deletion requests %s" % today.strftime("%B %Y"):
@@ -222,11 +236,16 @@ def Notify(cat):
             else:
                 nominator = Nominator(file_name, cat)
 
-            out("\n\n %d\n %s\n Uploaded by User:%s\n nominated by User:%s" % (g_file_count, file_name, Uploader, nominator) , color="yellow")
+            out(
+                "\n\n %d\n %s\n Uploaded by User:%s\n nominated by User:%s"
+                % (g_file_count, file_name, Uploader, nominator),
+                color="yellow",
+            )
 
             Path(".logs").mkdir(parents=True, exist_ok=True)
             m_log = ".logs/%s.csv" % today.strftime("%B_%Y")
-            if not os.path.isfile(m_log):open(m_log, 'w').close()
+            if not os.path.isfile(m_log):
+                open(m_log, "w").close()
             with open(m_log, "r") as f:
                 stored_data = f.read()
 
@@ -235,21 +254,30 @@ def Notify(cat):
                 continue
 
             storeData(file_name, Uploader, cat, nominator, m_log)
-            
+
             if cat == "Deletion requests %s" % today.strftime("%B %Y"):
                 if _is_aware:
-                    out("Aware of DR, subpage found on uploader talk page.", color="white")
+                    out(
+                        "Aware of DR, subpage found on uploader talk page.",
+                        color="white",
+                    )
                     continue
 
             if nominator == "AntiCompositeBot":
                 out("AntiCompositeBot's task")
                 continue
 
-            if pywikibot.User(SITE, Uploader).isBlocked(force=True) or is_locked(Uploader):
+            if pywikibot.User(SITE, Uploader).isBlocked(force=True) or is_locked(
+                Uploader
+            ):
                 out("uploader %s is locked/blocked." % Uploader, color="white")
                 continue
 
-            if "move" in (next((pywikibot.Page(SITE, file_name)).revisions(reverse=True,total =1)).comment):
+            if "move" in (
+                next(
+                    (pywikibot.Page(SITE, file_name)).revisions(reverse=True, total=1)
+                ).comment
+            ):
                 out("%s is just a redirect." % file_name, color="white")
                 continue
 
@@ -258,54 +286,81 @@ def Notify(cat):
                 continue
 
             if Uploader == nominator:
-                out("Uploader %s is the nominatortor himself." % Uploader, color="white")
+                out(
+                    "Uploader %s is the nominatortor himself." % Uploader, color="white"
+                )
                 continue
 
             rights_array = pywikibot.User(SITE, Uploader).groups(force=True)
 
-            if 'bot' in rights_array or 'bot' in Uploader.lower():
+            if "bot" in rights_array or "bot" in Uploader.lower():
                 out("Uploader %s is a robot." % Uploader, color="white")
                 continue
 
             if file_name.replace("File:", "") in uploader_talk_text:
-                out("%s knows about deletion of %s . " % (Uploader, file_name) , color="white")
+                out(
+                    "%s knows about deletion of %s . " % (Uploader, file_name),
+                    color="white",
+                )
                 continue
 
-            dict = {
-                "Advertisements for speedy deletion": "{{User:Deletion Notification Bot/NOADS|1=%s}}" % file_name,
+            message_dict = {
+                "Advertisements for speedy deletion": "\n\n== [[:%s]] ==\n{{User:Deletion Notification Bot/NOADS/headingless|1=%s}}"
+                % (file_name, file_name),
                 "Copyright violations": "{{subst:copyvionote|1=%s|2=}}" % file_name,
-                "Other speedy deletions": "{{User:Deletion Notification Bot/SDEL|1=%s|2=}}" % file_name,
-                "Personal files for speedy deletion": "{{User:Deletion Notification Bot/personalNO|1=%s}}" % file_name,
-                "Deletion requests %s" % today.strftime("%B %Y") : "{{subst:idw|1=%s|2=}}" % file_name,
-                "Media without a license as of %s" % today.strftime("%-d %B %Y") : "{{subst:image license|1=%s}}" % file_name,
-                "Media missing permission as of %s" % today.strftime("%-d %B %Y") : "{{subst:image permission|1=%s}}" % file_name,
-                "Media without a source as of %s" % today.strftime("%-d %B %Y") : "{{subst:Image source |1=%s}}" % file_name,
+                "Other speedy deletions": "\n\n== [[:%s]] ==\n{{User:Deletion Notification Bot/SDEL/headingless|1=%s|2=}}"
+                % (file_name, file_name),
+                "Personal files for speedy deletion": "\n\n== [[:%s]] ==\n{{User:Deletion Notification Bot/personalNO/headingless|1=%s}}"
+                % (file_name, file_name),
+                "Deletion requests %s"
+                % today.strftime("%B %Y"): "{{subst:idw|1=%s|2=}}"
+                % file_name,
+                "Media without a license as of %s"
+                % today.strftime("%-d %B %Y"): "{{subst:image license|1=%s}}"
+                % file_name,
+                "Media missing permission as of %s"
+                % today.strftime("%-d %B %Y"): "{{subst:image permission|1=%s}}"
+                % file_name,
+                "Media without a source as of %s"
+                % today.strftime("%-d %B %Y"): "{{subst:Image source |1=%s}}"
+                % file_name,
             }
 
             file_count += 1
 
             if file_count <= 1:
                 if nominator:
-                    nominator_details = """<p style="font-size:0.8em;font-family:'Stencil Std'">\nUser who nominated the file for deletion (Nominator) : {{Noping|%s}}.</p>""" % nominator
+                    nominator_details = (
+                        """<p style="font-size:0.8em;font-family:'Stencil Std'">\nUser who nominated the file for deletion (Nominator) : {{Noping|%s}}.</p>"""
+                        % nominator
+                    )
                 else:
                     nominator_details = ""
-                message = ("\n" + dict.get(cat) + nominator_details)
+                message = "\n" + message_dict.get(cat) + nominator_details
 
                 if cat == "Deletion requests %s" % today.strftime("%B %Y"):
                     message = message.replace("|2=", "|2=%s" % subpage)
-    
+
                 if cat == "Copyright violations":
                     copyvio_reason = get_copyvio_reason(file_name)
-                    copyvio_reason = re.sub("\(\[\[User talk.*?Talkpagelinktext|[{}]","",copyvio_reason)
+                    copyvio_reason = re.sub(
+                        "\(\[\[User talk.*?Talkpagelinktext|[{}]", "", copyvio_reason
+                    )
                     message = message.replace("|2=", "|2=%s" % copyvio_reason)
-                
+
                 if cat == "Other speedy deletions":
                     ot_sd_reason = get_other_speedy_reason(file_name)
-                    ot_sd_reason = re.sub("\(\[\[User talk.*?Talkpagelinktext|[{}]","",ot_sd_reason)
+                    ot_sd_reason = re.sub(
+                        "\(\[\[User talk.*?Talkpagelinktext|[{}]", "", ot_sd_reason
+                    )
                     message = message.replace("|2=", "|2=%s" % ot_sd_reason)
-                    
+
                 new_text = new_text + message
-                summary = "Notification - [[Category:%s|%s]] - [[:%s]]" % (cat, cat, file_name)
+                summary = "Notification - [[Category:%s|%s]] - [[:%s]]" % (
+                    cat,
+                    cat,
+                    file_name,
+                )
 
             else:
                 if "And also:" not in new_text:
@@ -316,28 +371,39 @@ def Notify(cat):
                     nominator_details = ""
 
                 reason = ""
-                
+
                 if cat == "Copyright violations":
-                    copyvio_reason = re.sub("\(\[\[User talk.*?Talkpagelinktext|[{}]","", get_copyvio_reason(file_name))
+                    copyvio_reason = re.sub(
+                        "\(\[\[User talk.*?Talkpagelinktext|[{}]",
+                        "",
+                        get_copyvio_reason(file_name),
+                    )
                     reason = "- Reason : %s" % copyvio_reason
 
-                _file_info = """\n* [[:%s]] <span style="font-size:0.8em;font-family:'Stencil Std'">( %s %s )</span>""" % (file_name , nominator_details, reason)
+                _file_info = (
+                    """\n* [[:%s]] <span style="font-size:0.8em;font-family:'Stencil Std'">( %s %s )</span>"""
+                    % (file_name, nominator_details, reason)
+                )
                 new_text = new_text + _file_info
 
-                summary = "Notification - [[Category:%s|%s]] - [[:%s]] and %d other files" % (cat, cat, file_name, (file_count-1))
-        
+                summary = (
+                    "Notification - [[Category:%s|%s]] - [[:%s]] and %d other files"
+                    % (cat, cat, file_name, (file_count - 1))
+                )
+
         if file_count < 1:
             continue
 
-        new_text = new_text + "\nI'm a computer program; please don't ask me questions but ask the user who nominated your file(s) for deletion or at our [[Commons:Help_desk|Help Desk]]. //~~~~"
-        
+        new_text = (
+            new_text
+            + "\nI'm a computer program; please don't ask me questions but ask the user who nominated your file(s) for deletion or at our [[Commons:Help_desk|Help Desk]]. //~~~~"
+        )
+
         new_text = uploader_talk_page.get() + new_text
         try:
             commit(uploader_talk_text, new_text, uploader_talk_page, summary)
         except:
             pass
-                
-            
 
 
 def main(*args):
@@ -348,18 +414,18 @@ def main(*args):
         SITE.login()
 
     Deletion_Cats = [
-        "Advertisements for speedy deletion",                  #0
-        "Copyright violations",                                #1
-        "Other speedy deletions",                              #2
-        "Personal files for speedy deletion",                  #3
-        "Deletion requests %s" % today.strftime("%B %Y"),                        #4
-        "Media without a license as of %s" % today.strftime("%-d %B %Y"),         #5
-        "Media missing permission as of %s" % today.strftime("%-d %B %Y"),        #6
-        "Media without a source as of %s" % today.strftime("%-d %B %Y"),          #7
-        ]
+        "Advertisements for speedy deletion",  # 0
+        "Copyright violations",  # 1
+        "Other speedy deletions",  # 2
+        "Personal files for speedy deletion",  # 3
+        "Deletion requests %s" % today.strftime("%B %Y"),  # 4
+        "Media without a license as of %s" % today.strftime("%-d %B %Y"),  # 5
+        "Media missing permission as of %s" % today.strftime("%-d %B %Y"),  # 6
+        "Media without a source as of %s" % today.strftime("%-d %B %Y"),  # 7
+    ]
 
     for cat in Deletion_Cats:
-        out("Crunching data for %s " % cat, color = "red")
+        out("Crunching data for %s " % cat, color="red")
         Notify(cat)
 
 
@@ -368,4 +434,3 @@ if __name__ == "__main__":
         main()
     finally:
         pywikibot.stopme()
-

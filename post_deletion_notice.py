@@ -152,7 +152,7 @@ class DeletedFile:
     def sanatize_reason(reason):
         text = reason
         if re.search(r"{{\s{0,5}delete\|", text):
-            text = text.replace("}"," ").replace("{"," ")
+            text = text.replace("}", " ").replace("{", " ")
             text = text.replace("|", " - ")
         return text
 

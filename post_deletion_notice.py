@@ -149,8 +149,16 @@ class DeletedFile:
         out("Delete reason : %s" % self.delete_comment(), color="yellow")
         out("Uploader ec : %d" % self.uploader_ec, color="yellow")
 
+    def sanatize_reason(reason):
+        text = reason
+        if re.search(r"{{\s{0,5}delete\|", text):
+            text = text.replace("}"," ").replace("{"," ")
+            text = text.replace("|", " - ")
+        return text
+
     def notify_uploader(self):
         reason, admin = self.delete_comment(), self.deleter_admin()
+        reason = sanatize_reason(reason)
         file_name = self.file_name
         old_text = self.uploader_talk_page().get()
         new_text = (

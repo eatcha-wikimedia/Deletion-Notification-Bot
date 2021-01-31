@@ -13,32 +13,54 @@ today = datetime.utcnow()
 post_del_file = ".logs/post_deletion_%s.csv" % today.strftime("%B_%Y")
 last_100_users = []
 
+
 class DeletedFile:
     def __init__(self, file_name):
         self.file_name = file_name
-    
+
     def deleter_admin(self):
-        for log in pywikibot.site.APISite.logevents(SITE,logtype="delete",page=self.file_name):
+        for log in pywikibot.site.APISite.logevents(
+            SITE, logtype="delete", page=self.file_name
+        ):
             return log.data.get("user")
-    
+
     def delete_comment(self):
-        for log in pywikibot.site.APISite.logevents(SITE,logtype="delete",page=self.file_name):
+        for log in pywikibot.site.APISite.logevents(
+            SITE, logtype="delete", page=self.file_name
+        ):
             comment = log.data.get("comment")
-            comment = re.sub(r"[Cc]ategory:",":Category:", comment)
+            comment = re.sub(r"[Cc]ategory:", ":Category:", comment)
             return comment
 
     def is_locked(self):
-        user_agent = {'user-agent': 'User:Deletion Notification Bot @ wikimedia Commons'}
+        user_agent = {
+            "user-agent": "User:Deletion Notification Bot @ wikimedia Commons"
+        }
         http = urllib3.PoolManager(headers=user_agent)
-        r = http.request('GET', 'https://login.wikimedia.org/w/api.php?action=query&meta=globaluserinfo&format=json&guiuser=%s' % self.uploader())
-        data = json.loads(r.data.decode('utf-8'))
+        r = http.request(
+            "GET",
+            "https://login.wikimedia.org/w/api.php?action=query&meta=globaluserinfo&format=json&guiuser=%s"
+            % self.uploader(),
+        )
+        data = json.loads(r.data.decode("utf-8"))
         if (data.get("query").get("globaluserinfo").get("locked", False)) is False:
             return False
         return True
 
     def uploader(self):
         try:
-            return([info for info in pywikibot.site.APISite.logevents(SITE,logtype="upload",page=self.file_name,reverse=True,total=1)])[0].user()
+            return (
+                [
+                    info
+                    for info in pywikibot.site.APISite.logevents(
+                        SITE,
+                        logtype="upload",
+                        page=self.file_name,
+                        reverse=True,
+                        total=1,
+                    )
+                ]
+            )[0].user()
         except:
             return "Unknown"
 
@@ -86,7 +108,7 @@ class DeletedFile:
             "author request",
             "G7",
             "user request",
-            "roken redirect", #works as [Bb]
+            "roken redirect",  # works as [Bb]
             "REDIRECT",
             "Unused and implausible",
             "Moved to",
@@ -112,23 +134,30 @@ class DeletedFile:
             return "No"
 
     def log_it(self):
-        if not os.path.isfile(post_del_file):open(post_del_file, 'w').close()
-        with open(post_del_file,'a') as fd:
-            NewFileRow = "\n{ca}, {cb}, {cc}".format(ca=self.file_name,cb=self.uploader(),cc=self.deleter_admin())
+        if not os.path.isfile(post_del_file):
+            open(post_del_file, "w").close()
+        with open(post_del_file, "a") as fd:
+            NewFileRow = "\n{ca}, {cb}, {cc}".format(
+                ca=self.file_name, cb=self.uploader(), cc=self.deleter_admin()
+            )
             fd.write(NewFileRow)
 
     def out_file_info(self):
-        out("Name : %s" % self.file_name, color = "yellow")
-        out("Uploader : %s" % self.uploader(), color = "yellow")
-        out("Deleted by : %s" % self.deleter_admin(), color = "yellow")
-        out("Delete reason : %s" % self.delete_comment(), color = "yellow")
-        out("Uploader ec : %d" % self.uploader_ec, color = "yellow")
+        out("Name : %s" % self.file_name, color="yellow")
+        out("Uploader : %s" % self.uploader(), color="yellow")
+        out("Deleted by : %s" % self.deleter_admin(), color="yellow")
+        out("Delete reason : %s" % self.delete_comment(), color="yellow")
+        out("Uploader ec : %d" % self.uploader_ec, color="yellow")
 
     def notify_uploader(self):
         reason, admin = self.delete_comment(), self.deleter_admin()
         file_name = self.file_name
         old_text = self.uploader_talk_page().get()
-        new_text = ( old_text + "\n{{subst:User:Deletion Notification Bot/deleted notice|1=%s|2=%s|3=%s}}~~~~" % (file_name, admin, reason))
+        new_text = (
+            old_text
+            + "\n{{subst:User:Deletion Notification Bot/deleted notice|1=%s|2=%s|3=%s}}~~~~"
+            % (file_name, admin, reason)
+        )
         summary = "[[%s]] was recently deleted by User:%s " % (file_name, admin)
         commit(old_text, new_text, self.uploader_talk_page(), summary)
 
@@ -146,10 +175,9 @@ class DeletedFile:
             else:
                 self.log_it()
 
-
             self.out_file_info()
 
-            if 'bot' in self.uploader_rights_list() or 'bot' in Uploader.lower():
+            if "bot" in self.uploader_rights_list() or "bot" in Uploader.lower():
                 out("We don't want the bot to notify another bot", color="white")
                 return
 
@@ -167,32 +195,34 @@ class DeletedFile:
                 out("uploader aware of the file\n\n")
                 return
 
+
 def logged_data():
     try:
         with open(post_del_file, "r") as f:
             post_del_data = f.read()
-    except:post_del_data = ""
+    except:
+        post_del_data = ""
     Path(".logs").mkdir(parents=True, exist_ok=True)
     m_log = ".logs/%s.csv" % today.strftime("%B_%Y")
-    if not os.path.isfile(m_log):open(m_log, 'w').close()
+    if not os.path.isfile(m_log):
+        open(m_log, "w").close()
     with open(m_log, "r") as f:
         stored_data = f.read()
-    return (post_del_data + "\n" + stored_data)
+    return post_del_data + "\n" + stored_data
+
 
 def commit(old_text, new_text, page, summary):
     out("\nAbout to make changes at : '%s'" % page.title())
     pywikibot.showDiff(old_text, new_text)
     page.put(new_text, summary=summary, watchArticle=True, minorEdit=False)
 
+
 def out(text, newline=True, date=False, color=None):
     if color:
         text = "\03{%s}%s\03{default}" % (color, text)
-    dstr = (
-        "%s: " % datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
-        if date
-        else ""
-    )
+    dstr = "%s: " % datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S") if date else ""
     pywikibot.stdout("%s%s" % (dstr, text), newline=newline)
+
 
 def main(*args):
     global SITE
@@ -200,20 +230,21 @@ def main(*args):
     SITE = pywikibot.Site()
     if not SITE.logged_in():
         SITE.login()
-    gen  = pagegenerators.LogeventsPageGenerator(
-        logtype = "delete",
-        site = SITE,namespace = 6,
-        start = pywikibot.site.APISite.getcurrenttimestamp(SITE),
-        end = (today-timedelta(hours=2)).strftime("%Y%m%d%H%M%S")
+    gen = pagegenerators.LogeventsPageGenerator(
+        logtype="delete",
+        site=SITE,
+        namespace=6,
+        start=pywikibot.site.APISite.getcurrenttimestamp(SITE),
+        end=(today - timedelta(hours=2)).strftime("%Y%m%d%H%M%S"),
     )
     logged_files = logged_data()
     for deleted_file in gen:
-        time.sleep(60*5) # 5 minutes, delay. Incase the admin wanna say something.
+        time.sleep(60 * 5)  # 5 minutes, delay. Incase the admin wanna say something.
         DeletedFile(deleted_file.title()).handle(logged_files)
 
 
 if __name__ == "__main__":
-  try:
-    main()
-  finally:
-    pywikibot.stopme()
+    try:
+        main()
+    finally:
+        pywikibot.stopme()
